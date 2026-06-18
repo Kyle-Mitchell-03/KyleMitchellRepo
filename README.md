@@ -7,4 +7,4 @@ This is the repository of Kyle Mitchell. It holds any projects that I have worke
 Thanks for stopping by!
 
 
-# Project Instructions
+# Project Descriptions / Instructions
