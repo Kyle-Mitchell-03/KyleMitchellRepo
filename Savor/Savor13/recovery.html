@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Reset Password - S4VOR</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100dvh;
+      background: url("S6.png") no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Arial Rounded MT Bold', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Top logo ── */
+    .title-overlay {
+      width: 100%;
+      padding: 14px 0 8px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .title-link { text-decoration: none; color: inherit; }
+
+    .title-pickup {
+      font-size: clamp(28px, 10vw, 40px);
+      color: #0a5a2e;
+      margin: 0;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-shadow:
+        0 3px 0 #c8e1c8,
+        0 6px 0 #a8d1a8,
+        0 9px 10px rgba(0,0,0,0.25);
+    }
+
+    /* ── Centered card area ── */
+    .login-overlay {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px 16px 40px;
+    }
+
+    /* ── Card ── */
+    .login-box {
+      background: rgba(255,255,255,0.93);
+      border-radius: 25px;
+      padding: 32px 24px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+      text-align: center;
+      width: 100%;
+      max-width: 460px;
+    }
+
+    .card-heading {
+      font-size: 15px;
+      color: #555;
+      margin: 0 0 20px;
+      line-height: 1.5;
+    }
+
+    /* ── Inputs ── */
+    .login-input {
+      display: block;
+      width: 100%;
+      padding: 14px 13px;
+      margin-bottom: 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;        /* prevents iOS auto-zoom */
+      font-family: inherit;
+      background-color: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      transition: box-shadow 0.25s ease;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .login-input:focus {
+      outline: none;
+      box-shadow: 0 0 10px rgba(17,143,84,0.4);
+    }
+
+    /* ── Button ── */
+    .login-submit {
+      background-color: #0a5a2e;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      font-family: inherit;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 4px;
+    }
+    .login-submit:hover  { background-color: #118f54; transform: scale(1.03); }
+    .login-submit:active { transform: scale(0.97); background-color: #0d7f40; }
+
+    /* ── Bottom links ── */
+    .login-links {
+      margin-top: 24px;
+      font-size: 16px;
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .login-links a { color: #0a5a2e; text-decoration: none; transition: color 0.2s ease; }
+    .login-links a:hover { text-decoration: underline; color: #118f54; }
+
+    /* ── Tablet / desktop ── */
+    @media (min-width: 520px) {
+      .login-box { padding: 45px 52px; }
+      .login-submit { width: auto; padding: 14px 50px; font-size: 20px; }
+      .login-links { font-size: 18px; }
+    }
+    
+    @media (max-width: 599px)
+    {
+        .title-overlay{
+            padding-top: calc(env(safe-area-inset-top) + 10px);
+        }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="title-overlay">
+    <a href="index.html" class="title-link">
+      <h1 class="title-pickup">SAVOR</h1>
+    </a>
+  </div>
+
+  <div class="login-overlay">
+    <div class="login-box">
+
+      <p class="card-heading">Enter your username and choose a new password.</p>
+
+      <input
+        type="text"
+        class="login-input"
+        id="username"
+        placeholder="Username"
+        autocomplete="username"
+        inputmode="text"
+      >
+      <input
+        type="password"
+        class="login-input"
+        id="password"
+        placeholder="New Password"
+        autocomplete="new-password"
+        enterkeyhint="next"
+      >
+      <input
+        type="password"
+        class="login-input"
+        id="confirmPassword"
+        placeholder="Re-enter New Password"
+        autocomplete="new-password"
+        enterkeyhint="go"
+      >
+
+      <button class="login-submit" onclick="resetPass()">Reset Password</button>
+
+      <div class="login-links">
+        <a href="login.html">Back to Login</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+    const firebaseConfig = { databaseURL: "https://savordatabase-default-rtdb.firebaseio.com" };
+    const app = initializeApp(firebaseConfig);
+    const savorDB = getDatabase(app);
+
+    window.resetPass = function () {
+      const currentUser     = document.getElementById('username').value.trim();
+      const currentPassword = document.getElementById('password').value.trim();
+      const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+      if (!currentUser) {
+        alert("Please enter your username.");
+        return;
+      }
+
+      if (!currentPassword) {
+        alert("Please enter a new password.");
+        return;
+      }
+
+      if (currentPassword !== confirmPassword) {
+        alert("Passwords do not match. Please re-enter them.");
+        return;
+      }
+
+      const passRef = ref(savorDB, `user/${currentUser}/password`);
+      set(passRef, confirmPassword)
+        .then(() => {
+          alert("Password updated successfully!");
+          window.location.href = "login.html";
+        })
+        .catch(err => {
+          console.error("Error updating password:", err);
+          alert("Failed to update password.");
+        });
+    };
+  </script>
+</body>
+</html>

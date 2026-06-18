@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>SAVOR - Create Restaurant</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100dvh;
+      background: url("S6.png") no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Arial Rounded MT Bold', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Top logo ── */
+    .title-overlay {
+      width: 100%;
+      padding: 14px 0 8px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .title-link { text-decoration: none; color: inherit; }
+
+    .title-pickup {
+      font-size: clamp(28px, 10vw, 40px);
+      color: #0a5a2e;
+      margin: 0;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-shadow:
+        0 3px 0 #c8e1c8,
+        0 6px 0 #a8d1a8,
+        0 9px 10px rgba(0,0,0,0.25);
+    }
+
+    /* ── Scrollable card area ── */
+    .login-overlay {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 12px 16px 40px;
+    }
+
+    /* ── Card ── */
+    .login-box {
+      background: rgba(255,255,255,0.93);
+      border-radius: 25px;
+      padding: 28px 24px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+      text-align: center;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .login-box h1 {
+      font-size: 22px;
+      color: #0a5a2e;
+      margin: 0 0 20px;
+    }
+
+    /* ── Section dividers ── */
+    .section-label {
+      font-size: 13px;
+      font-weight: bold;
+      color: #555;
+      text-align: left;
+      margin: 4px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(17,143,84,0.2);
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Hours grid: 2 columns on wider screens ── */
+    .hours-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 12px;
+    }
+
+    /* Sunday spans full width so it doesn't sit alone */
+    .hours-grid .full-width { grid-column: 1 / -1; }
+
+    /* ── Inputs ── */
+    .login-input {
+      display: block;
+      width: 100%;
+      padding: 14px 13px;
+      margin-bottom: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;       /* prevents iOS auto-zoom */
+      font-family: inherit;
+      background-color: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      transition: box-shadow 0.25s ease;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .login-input:focus {
+      outline: none;
+      box-shadow: 0 0 10px rgba(17,143,84,0.4);
+    }
+    .login-input::placeholder { color: #aaa; }
+
+    /* ── Submit button ── */
+    .login-submit {
+      background-color: #0a5a2e;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      font-family: inherit;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 6px;
+    }
+    .login-submit:hover  { background-color: #118f54; transform: scale(1.03); }
+    .login-submit:active { transform: scale(0.97); background-color: #0d7f40; }
+
+    /* ── Tablet / desktop: wider card ── */
+    @media (min-width: 520px) {
+      .login-overlay { align-items: center; padding: 16px 24px 40px; }
+      .login-box { padding: 36px 48px; }
+      .login-submit { width: auto; padding: 14px 50px; font-size: 20px; }
+    }
+
+    /* On very small screens collapse hours to single column */
+    @media (max-width: 360px) {
+      .hours-grid { grid-template-columns: 1fr; }
+      .hours-grid .full-width { grid-column: auto; }
+    }
+      
+      @media (max-width: 599px) {
+        .title-overlay{
+            padding-top: calc(env(safe-area-inset-top) + 10px);
+        }
+      }
+  </style>
+</head>
+<body>
+
+  <div class="title-overlay">
+    <a href="index.html" class="title-link">
+      <h1 class="title-pickup">SAVOR</h1>
+    </a>
+  </div>
+
+  <div class="login-overlay">
+    <div class="login-box">
+
+      <h1 id="createHeader">Create Restaurant</h1>
+
+      <!-- Business info -->
+      <div class="section-label">Business Info</div>
+      <input type="text"  class="login-input" id="restName"  placeholder="Business Name"           autocomplete="organization">
+      <input type="text"  class="login-input" id="address"   placeholder="Address"                 autocomplete="street-address">
+      <input type="tel"   class="login-input" id="phoneNum"  placeholder="Phone Number"            autocomplete="tel"          inputmode="tel">
+      <input type="text"  class="login-input" id="restType"  placeholder="Establishment / Food Type">
+      <input type="url"   class="login-input" id="imgLink"   placeholder="Image Link (URL)"        inputmode="url">
+
+      <!-- Hours -->
+      <div class="section-label">Hours of Operation &nbsp;(HH:MM AM – HH:MM PM)</div>
+      <div class="hours-grid">
+        <input type="text" class="login-input" id="mon"   placeholder="Monday">
+        <input type="text" class="login-input" id="tues"  placeholder="Tuesday">
+        <input type="text" class="login-input" id="wed"   placeholder="Wednesday">
+        <input type="text" class="login-input" id="thurs" placeholder="Thursday">
+        <input type="text" class="login-input" id="fri"   placeholder="Friday">
+        <input type="text" class="login-input" id="sat"   placeholder="Saturday">
+        <input type="text" class="login-input full-width" id="sun" placeholder="Sunday">
+      </div>
+
+      <button class="login-submit" id="createButton">Create Restaurant</button>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+    const firebaseConfig = { databaseURL: "https://savordatabase-default-rtdb.firebaseio.com" };
+    const app    = initializeApp(firebaseConfig);
+    const savorDB = getDatabase(app);
+
+    // Auth guard
+    if (!localStorage.getItem("loggedInUser")) {
+      alert("You must be logged in to create a restaurant!");
+      window.location.href = "login.html";
+    }
+
+    // Check account type to set heading
+    const owner = localStorage.getItem("loggedInUser");
+    const userRef = ref(savorDB, `user/${owner}/accountType`);
+    get(userRef).then(snapshot => {
+      if (snapshot.exists() && snapshot.val() === "fb") {
+        document.getElementById("createHeader").textContent = "Create Food Bank";
+        document.getElementById("createButton").textContent = "Create Food Bank";
+      }
+    }).catch(err => console.error("Error fetching account type:", err));
+
+    async function geocodeAddress(address) {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+      const res  = await fetch(url, { headers: { "User-Agent": "S4VOR-Student-Project/1.0" } });
+      const data = await res.json();
+      if (data.length === 0) throw new Error("Address not found");
+      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    }
+
+    async function createRest() {
+      const rest        = document.getElementById("restName").value.trim();
+      const address     = document.getElementById("address").value.trim();
+      const phoneNumber = document.getElementById("phoneNum").value.trim();
+      const type        = document.getElementById("restType").value.trim();
+      const image       = document.getElementById("imgLink").value.trim();
+
+      const mon   = document.getElementById("mon").value.trim();
+      const tues  = document.getElementById("tues").value.trim();
+      const wed   = document.getElementById("wed").value.trim();
+      const thurs = document.getElementById("thurs").value.trim();
+      const fri   = document.getElementById("fri").value.trim();
+      const sat   = document.getElementById("sat").value.trim();
+      const sun   = document.getElementById("sun").value.trim();
+
+      if (!rest || !address) {
+        alert("Please enter at least a business name and address.");
+        return;
+      }
+
+      const rating = (Math.floor(Math.random() * 21) + 30) / 10;
+
+      // Link restaurant to owner
+      const ownerRef = ref(savorDB, `user/${owner}`);
+      update(ownerRef, { rest }).catch(err => console.error("Error updating owner:", err));
+
+      let lat, lng;
+      try {
+        ({ lat, lng } = await geocodeAddress(address));
+      } catch (err) {
+        alert("Could not find that address. Please check and try again.");
+        return;
+      }
+
+      const hours = {
+        Monday:    mon,
+        Tuesday:   tues,
+        Wednesday: wed,
+        Thursday:  thurs,
+        Friday:    fri,
+        Saturday:  sat,
+        Sunday:    sun
+      };
+
+      const restRef = ref(savorDB, `rest/${rest}`);
+      set(restRef, { phoneNumber, type, hours, image, lat, lng, rating, owner })
+        .then(() => {
+          alert(`Business "${rest}" created successfully!`);
+          window.location.href = "index.html";
+        })
+        .catch(err => {
+          console.error("Error creating business:", err);
+          alert("Failed to create business.");
+        });
+    }
+
+    document.getElementById("createButton").addEventListener("click", createRest);
+  </script>
+</body>
+</html>
