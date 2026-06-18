@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Food Bank Account - Savor</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100dvh;
+      background: url("S6.png") no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Arial Rounded MT Bold', sans-serif;
+    }
+
+    /* ═══════════════════════════════════════
+       DESKTOP LAYOUT  (≥ 900px)
+    ═══════════════════════════════════════ */
+    @media (min-width: 900px) {
+      .settings-layout {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        gap: 24px;
+        height: 100vh;
+        padding: 24px;
+      }
+      .settings-nav      { display: flex; flex-direction: column; gap: 12px; }
+      .mobile-header     { display: none; }
+      .mobile-bottom-nav { display: none; }
+    }
+
+    /* ═══════════════════════════════════════
+       MOBILE LAYOUT  (< 900px)
+    ═══════════════════════════════════════ */
+    @media (max-width: 899px) {
+      .settings-layout {
+        display: flex;
+        flex-direction: column;
+        min-height: 100dvh;
+        padding: 0;
+        gap: 0;
+      }
+
+      .settings-nav { display: none; }
+
+      .settings-content {
+        flex: 1;
+        border-radius: 0;
+        padding: 16px;
+        max-height: none;
+        overflow: visible;
+        padding-bottom: 80px;
+      }
+
+      .mobile-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 16px;
+        background: rgba(255,255,255,0.93);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        flex-shrink: 0;
+      }
+
+      .mobile-header .title-pickup { font-size: clamp(22px, 7vw, 32px); margin: 0; }
+
+      .mobile-header .header-user {
+        font-size: 13px;
+        color: #444;
+        font-weight: bold;
+        max-width: 50%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: right;
+      }
+
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        height: 64px;
+        background: rgba(255,255,255,0.97);
+        box-shadow: 0 -2px 16px rgba(0,0,0,0.15);
+        z-index: 200;
+        border-top: 1px solid rgba(17,143,84,0.15);
+      }
+
+      .mobile-bottom-nav .mob-nav-item {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: 10px;
+        color: #666;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        padding: 6px 4px;
+        transition: color 0.2s;
+        font-family: inherit;
+      }
+
+      .mobile-bottom-nav .mob-nav-item .nav-icon { font-size: 19px; line-height: 1; }
+
+      .mobile-bottom-nav .mob-nav-item.is-active {
+        color: #0a5a2e;
+        background: rgba(17,143,84,0.06);
+      }
+
+      .mobile-bottom-nav .mob-nav-item.danger           { color: #b3261e; }
+      .mobile-bottom-nav .mob-nav-item.danger.is-active { background: rgba(179,38,30,0.06); }
+
+      .settings-header { margin-bottom: 12px; }
+      .login-submit    { width: 100%; padding: 14px; font-size: 18px; }
+      .actions         { flex-direction: column; }
+
+      .field-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .field-row .field { margin-bottom: 0; }
+
+      .card + .card { margin-top: 14px; }
+    }
+
+    /* ═══════════════════════════════════════
+       SHARED STYLES
+    ═══════════════════════════════════════ */
+    .settings-nav {
+      background: rgba(255,255,255,0.93);
+      border-radius: 25px;
+      padding: 24px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+      overflow: auto;
+    }
+
+    .nav-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 12px 14px;
+      background: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      font-family: inherit;
+      cursor: pointer;
+      box-shadow: 0 0 5px rgba(0,0,0,0.08);
+      transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease;
+    }
+    .nav-item:hover     { transform: translateX(2px); }
+    .nav-item.is-active { background: #e7f5ee; box-shadow: 0 0 0 2px rgba(17,143,84,0.25) inset; }
+    .nav-item.danger-item { color: #b3261e; }
+
+    .settings-content {
+      background: rgba(255,255,255,0.93);
+      border-radius: 25px;
+      padding: 28px 32px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+      overflow: auto;
+      max-height: calc(100vh - 48px);
+    }
+
+    .profile-avatar { display: flex; justify-content: center; margin: 6px 0 12px; }
+    .avatar-large {
+      width: 80px; height: 80px;
+      border-radius: 50%; object-fit: cover;
+      border: 3px solid #0a5a2e;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      background-color: #f2f2f2;
+    }
+
+    .settings-header   { text-align: center; margin-bottom: 18px; }
+    .settings-subtitle { color: #444; margin: 6px 0 0; font-size: 14px; }
+
+    .panel {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      display: none;
+    }
+    .panel.is-visible { display: block; opacity: 1; transform: translateY(0); }
+
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 18px 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    .form-grid { max-width: 720px; margin: 0 auto; }
+    .field { margin-bottom: 16px; text-align: left; }
+    .field label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; }
+
+    .actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .status  { font-size: 14px; color: #0a5a2e; }
+
+    .login-input {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      margin-bottom: 0;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-family: inherit;
+      background-color: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      transition: box-shadow 0.25s ease;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .login-input:focus { outline: none; box-shadow: 0 0 10px rgba(17,143,84,0.4); }
+
+    .login-submit {
+      background-color: #0a5a2e;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      padding: 14px 44px;
+      font-size: 18px;
+      font-family: inherit;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 10px;
+    }
+    .login-submit:hover  { background-color: #118f54; transform: scale(1.04); }
+    .login-submit:active { transform: scale(0.97); }
+
+    .title-pickup {
+      font-size: 40px; color: #0a5a2e; margin: 0;
+      font-weight: 900; letter-spacing: 3px;
+      text-shadow: 0 3px 0 #c8e1c8, 0 6px 0 #a8d1a8, 0 9px 10px rgba(0,0,0,0.25);
+    }
+    .title-link { text-decoration: none; color: inherit; }
+
+    .row        { display: flex; justify-content: space-between; align-items: center; }
+    .hd         { width: 100%; }
+    .title      { font-weight: 700; color: #0a5a2e; }
+    .rest       { flex: 1; text-align: center; font-size: 0.9rem; }
+    .totalPrice { text-align: right; font-size: 0.9rem; }
+
+    #pending-orders .card,
+    #completed-orders .card {
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    #pending-orders .card:hover,
+    #completed-orders .card:hover { transform: translateY(-2px); }
+    
+    @media (max-width: 599px) {
+      .mobile-header {
+        padding-top: calc(env(safe-area-inset-top) + 10px);
+      }
+      .mobile-bottom-nav {
+        padding-bottom: env(safe-area-inset-bottom);
+        height: calc(64px + env(safe-area-inset-bottom));
+      }
+      
+      .mobile-bottom-nav .nav-item {
+          font-size: 9px;
+          padding: 6px 2px;
+        }
+        .mobile-bottom-nav .nav-item .nav-icon {
+          font-size: 17px;
+        }
+        
+    }
+      
+  </style>
+</head>
+<body>
+
+  <header class="mobile-header">
+    <a href="index.html" class="title-link">
+      <h1 class="title-pickup">SAVOR</h1>
+    </a>
+    <div class="header-user" id="header-username">My Account</div>
+  </header>
+
+  <div class="settings-layout">
+
+    <aside class="settings-nav" aria-label="Settings sections">
+      <a href="index.html" class="title-link">
+        <h1 class="title-pickup">SAVOR</h1>
+      </a>
+      <nav role="tablist" aria-orientation="vertical" id="sidebar">
+        <button type="button" class="nav-item is-active" role="tab" aria-selected="true"  aria-controls="panel-profile"  id="tab-profile">Personal Info</button>
+        <button type="button" class="nav-item"           role="tab" aria-selected="false" aria-controls="panel-security" id="tab-security">Security</button>
+        <button type="button" class="nav-item"           role="tab" aria-selected="false" aria-controls="panel-payment"  id="tab-payment">Payment Info</button>
+        <button type="button" class="nav-item"           role="tab" aria-selected="false" aria-controls="panel-orders"   id="tab-orders">Orders</button>
+        <button type="button" class="nav-item"           role="tab" aria-selected="false" aria-controls="panel-settings" id="tab-settings">Food Bank Info</button>
+        <button type="button" class="nav-item danger-item" role="tab" aria-selected="false" aria-controls="panel-logout" id="tab-logout">Logout</button>
+        <button type="button" class="nav-item danger-item" role="tab" aria-selected="false" aria-controls="panel-delete" id="tab-delete">Delete Account</button>
+      </nav>
+    </aside>
+
+    <main class="settings-content">
+
+      <div class="profile-avatar">
+        <img src="user_icon.png" alt="User Avatar" class="avatar-large"/>
+      </div>
+
+      <header class="settings-header">
+        <h2 id="panel-title">Profile Settings</h2>
+        <p class="settings-subtitle">Manage your info and settings here.</p>
+      </header>
+
+      <section id="panel-profile" class="panel is-visible" role="tabpanel" aria-labelledby="tab-profile">
+        <section class="card">
+          <h3>Personal Info</h3>
+          <form id="profileBasicsForm" class="form-grid" autocomplete="on">
+            <div class="field">
+              <label for="firstName">First Name</label>
+              <input type="text"  id="firstName"   name="firstName"   class="login-input" autocomplete="given-name"/>
+            </div>
+            <div class="field">
+              <label for="lastName">Last Name</label>
+              <input type="text"  id="lastName"    name="lastName"    class="login-input" autocomplete="family-name"/>
+            </div>
+            <div class="field">
+              <label for="email">Email</label>
+              <input type="email" id="email"       name="email"       class="login-input" autocomplete="email" inputmode="email"/>
+            </div>
+            <div class="field">
+              <label for="birthdate">Birthdate</label>
+              <input type="date"  id="birthdate"   name="birthdate"   class="login-input"/>
+            </div>
+            <div class="field">
+              <label for="phoneNumber">Phone Number</label>
+              <input type="tel"   id="phoneNumber" name="phoneNumber" class="login-input" autocomplete="tel" inputmode="tel"/>
+            </div>
+            <div class="actions">
+              <button type="submit" class="login-submit" onclick="saveAccountChanges1(event)">Save Changes</button>
+              <div id="profileBasicsStatus" class="status" aria-live="polite"></div>
+            </div>
+          </form>
+        </section>
+      </section>
+
+      <section id="panel-security" class="panel" role="tabpanel" aria-labelledby="tab-security" hidden>
+        <section class="card">
+          <h3>Security</h3>
+          <form id="securityForm" class="form-grid" autocomplete="off">
+            <div class="field">
+              <label for="currentPassword">Current Password</label>
+              <input type="password" id="currentPassword" name="currentPassword" class="login-input" autocomplete="current-password"/>
+            </div>
+            <div class="field">
+              <label for="newPassword">New Password</label>
+              <input type="password" id="newPassword"     name="newPassword"     class="login-input" autocomplete="new-password"/>
+            </div>
+            <div class="field">
+              <label for="confirmPassword">Confirm New Password</label>
+              <input type="password" id="confirmPassword" name="confirmPassword" class="login-input" autocomplete="new-password"/>
+            </div>
+            <div class="actions">
+              <button type="submit" class="login-submit" onclick="updatePass(event)">Update Password</button>
+              <div id="securityStatus" class="status" aria-live="polite"></div>
+            </div>
+          </form>
+        </section>
+      </section>
+
+      <section id="panel-payment" class="panel" role="tabpanel" aria-labelledby="tab-payment" hidden>
+        <section class="card">
+          <h3>Payment Info</h3>
+          <form id="paymentForm" class="form-grid" autocomplete="off">
+            <div class="field">
+              <label for="cardName">Cardholder Name</label>
+              <input type="text"     id="cardName"   class="login-input" placeholder="John Doe"            autocomplete="cc-name"/>
+            </div>
+            <div class="field">
+              <label for="cardNumber">Card Number</label>
+              <input type="text"     id="cardNumber" class="login-input" placeholder="1234 5678 9012 3456" autocomplete="cc-number" inputmode="numeric" maxlength="19"/>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="expiry">Expiration</label>
+                <input type="month"    id="expiry" class="login-input" autocomplete="cc-exp"/>
+              </div>
+              <div class="field">
+                <label for="cvv">CVV</label>
+                <input type="password" id="cvv"    class="login-input" placeholder="123" autocomplete="cc-csc" inputmode="numeric" maxlength="4"/>
+              </div>
+            </div>
+            <div class="actions">
+              <button type="button" class="login-submit" id="savePayment">Save Changes</button>
+            </div>
+          </form>
+        </section>
+      </section>
+
+      <section id="panel-orders" class="panel" role="tabpanel" aria-labelledby="tab-orders" hidden>
+        <section class="card">
+          <h3>Pending Orders</h3>
+          <div id="pending-orders"><p style="color:#888;">Loading…</p></div>
+        </section>
+        <section class="card">
+          <h3>Completed Orders</h3>
+          <div id="completed-orders"><p style="color:#888;">Loading…</p></div>
+        </section>
+      </section>
+
+      <section id="panel-settings" class="panel" role="tabpanel" aria-labelledby="tab-settings" hidden>
+        <section class="card">
+          <h3>Food Bank Information</h3>
+          <form id="fbInfoForm" class="form-grid" autocomplete="on">
+            <div class="field">
+              <label>Food Bank Name</label>
+              <input type="text"  id="fb-restName"    name="restName"    class="login-input"/>
+            </div>
+            <div class="field">
+              <label>Manager</label>
+              <input type="text"  id="fb-fullName"    name="fullName"    class="login-input"/>
+            </div>
+            <div class="field">
+              <label>Phone Number</label>
+              <input type="tel"   id="fb-phoneNumber" name="phoneNumber" class="login-input" autocomplete="tel" inputmode="tel"/>
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <input type="email" id="fb-email"       name="email"       class="login-input" autocomplete="email" inputmode="email"/>
+            </div>
+            <div class="field">
+              <label>Street Address</label>
+              <input type="text"  id="fb-street1"     name="street1"     class="login-input" autocomplete="address-line1" placeholder="123 Main St"/>
+            </div>
+            <div class="field">
+              <label>Apt / Suite (optional)</label>
+              <input type="text"  id="fb-street2"     name="street2"     class="login-input" autocomplete="address-line2" placeholder="Suite 200"/>
+            </div>
+            <div class="field">
+              <label>City</label>
+              <input type="text"  id="fb-city"        name="city"        class="login-input" autocomplete="address-level2" placeholder="Los Angeles"/>
+            </div>
+            <div class="field">
+              <label>State</label>
+              <input type="text"  id="fb-state"       name="state"       class="login-input" autocomplete="address-level1" placeholder="CA"/>
+            </div>
+            <div class="field">
+              <label>ZIP Code</label>
+              <input type="text"  id="fb-zip"         name="zip"         class="login-input" autocomplete="postal-code" placeholder="90001" inputmode="numeric"/>
+            </div>
+            <div class="field">
+              <label>Country</label>
+              <input type="text"  id="fb-country"     name="country"     class="login-input" autocomplete="country-name" placeholder="United States"/>
+            </div>
+
+            <div class="field">
+          <label>Logo Image URL</label>
+          <input
+            type="url"
+            id="logoImage"
+            name="logoImage"
+            class="login-input"
+            placeholder="https://example.com/logo.png"
+          />
+        </div>
+
+          <div class = "field">
+          <label>Map Preview Image URL</label>
+          <input
+            type="url"
+            id="mapPreviewImage"
+            name="mapPreviewImage"
+            class="login-input"
+            placeholder="https://example.com/map-preview.png"
+          />
+        </div>
+
+        <div class="field">
+          <label>Description / Slogan</label>
+          <textarea
+            id="restDescription"
+            name="restDescription"
+            class="login-input"
+            rows="4"
+            maxlength="400"
+            placeholder="Fresh bowls made daily with bold flavor."
+            style="resize: vertical; min-height: 110px;"
+          ></textarea>
+        </div>
+
+
+            <div class="actions">
+              <button type="button" class="login-submit" onclick="saveResChanges(event)">Save Changes</button>
+              <div id="fbInfoStatus" class="status" aria-live="polite"></div>
+            </div>
+          </form>
+        </section>
+      </section>
+
+      <section id="panel-logout" class="panel" role="tabpanel" aria-labelledby="tab-logout" hidden></section>
+      <section id="panel-delete" class="panel" role="tabpanel" aria-labelledby="tab-delete" hidden></section>
+
+    </main>
+  </div>
+
+  <nav class="mobile-bottom-nav" aria-label="Account navigation">
+    <button type="button" class="mob-nav-item is-active" data-panel="panel-profile">
+      <span class="nav-icon">👤</span>Info
+    </button>
+    <button type="button" class="mob-nav-item" data-panel="panel-security">
+      <span class="nav-icon">🔒</span>Security
+    </button>
+    <button type="button" class="mob-nav-item" data-panel="panel-payment">
+      <span class="nav-icon">💳</span>Payment
+    </button>
+    <button type="button" class="mob-nav-item" data-panel="panel-orders">
+      <span class="nav-icon">🧾</span>Orders
+    </button>
+    <button type="button" class="mob-nav-item" data-panel="panel-settings" id="mob-fb-info">
+      <span class="nav-icon">🏪</span>Food Bank Info
+    </button>
+    <button type="button" class="mob-nav-item danger" id="mob-logout">
+      <span class="nav-icon">🚪</span>Logout
+    </button>
+    <button type="button" class="mob-nav-item danger" id="mob-delete">
+      <span class="nav-icon">🗑️</span>Delete
+    </button>
+  </nav>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, set, get, update, remove } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+    const firebaseConfig = { databaseURL: "https://savordatabase-default-rtdb.firebaseio.com" };
+    const app     = initializeApp(firebaseConfig);
+    const savorDB = getDatabase(app);
+
+    const state      = { pendOrders: [], compOrders: [] };
+    const loggedUser = localStorage.getItem("loggedInUser");
+
+    if (loggedUser) {
+      const el = document.getElementById("header-username");
+      if (el) el.textContent = loggedUser;
+    }
+
+    function getAllPanels() { return Array.from(document.querySelectorAll('.panel')); }
+
+    function showPanelById(panelId) {
+      getAllPanels().forEach(p => { p.hidden = true; p.classList.remove('is-visible'); });
+      const target = document.getElementById(panelId);
+      if (target) { target.hidden = false; target.classList.add('is-visible'); }
+
+      document.querySelectorAll('#sidebar [role="tab"]').forEach(btn => {
+        const active = btn.getAttribute('aria-controls') === panelId;
+        btn.classList.toggle('is-active', active);
+        btn.setAttribute('aria-selected', String(active));
+      });
+
+      document.querySelectorAll('.mob-nav-item[data-panel]').forEach(btn => {
+        btn.classList.toggle('is-active', btn.dataset.panel === panelId);
+      });
+    }
+
+    function showPanel(tabEl) {
+      const panelId = tabEl.getAttribute('aria-controls') || tabEl.dataset.panel;
+      if (panelId) showPanelById(panelId);
+    }
+
+    document.getElementById('sidebar').addEventListener('click', e => {
+      const tab = e.target.closest('[role="tab"]');
+      if (!tab) return;
+      if (tab.id === 'tab-logout') { window.logoutUser(); return; }
+      if (tab.id === 'tab-delete') { confirmDelete(); return; }
+      showPanel(tab);
+    });
+
+    document.getElementById('sidebar').addEventListener('keydown', e => {
+      const tab = e.target.closest('[role="tab"]');
+      if (!tab) return;
+      const tabs = Array.from(document.querySelectorAll('#sidebar [role="tab"]'));
+      const idx  = tabs.indexOf(tab);
+      if (['ArrowUp', 'ArrowLeft'].includes(e.key)) {
+        e.preventDefault();
+        const prev = tabs[(idx - 1 + tabs.length) % tabs.length];
+        prev.focus(); showPanel(prev);
+      } else if (['ArrowDown', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+        const next = tabs[(idx + 1) % tabs.length];
+        next.focus(); showPanel(next);
+      }
+    });
+
+    document.querySelectorAll('.mob-nav-item[data-panel]').forEach(btn => {
+      btn.addEventListener('click', () => showPanel(btn));
+    });
+    document.getElementById('mob-logout')?.addEventListener('click', () => window.logoutUser());
+    document.getElementById('mob-delete')?.addEventListener('click', () => confirmDelete());
+
+    const initial = document.querySelector('#sidebar .is-active') || document.querySelector('#sidebar [role="tab"]');
+    if (initial) showPanel(initial);
+
+    window.saveAccountChanges1 = function (event) {
+      event.preventDefault();
+      const email     = document.getElementById('email').value.trim();
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName  = document.getElementById('lastName').value.trim();
+      const birthDate = document.getElementById('birthdate').value.trim();
+
+      if (!loggedUser) { alert("No logged in user!"); return; }
+
+      const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}$/;
+      if (!emailPattern.test(email)) { alert("Please enter a valid email."); return; }
+
+      update(ref(savorDB, `user/${loggedUser}`), { email, firstName, lastName, birthDate })
+        .then(() => alert("Account updated successfully!"))
+        .catch(err => { console.error(err); alert("Error saving account."); });
+    };
+
+    window.savePaymentInfo = function () {
+      const cardName   = document.getElementById('cardName').value.trim();
+      const cardNumber = document.getElementById('cardNumber').value.trim();
+      const expiry     = document.getElementById('expiry').value.trim();
+      const cvv        = document.getElementById('cvv').value.trim();
+
+      if (!loggedUser)                                 { alert("No logged in user!"); return; }
+      if (!cardName || !cardNumber || !expiry || !cvv) { alert("Please fill in all payment fields."); return; }
+
+      update(ref(savorDB, `user/${loggedUser}`), { cardName, cardNumber, expiry, cvv })
+        .then(() => alert("Payment info updated successfully!"))
+        .catch(err => { console.error(err); alert("Error saving payment info."); });
+    };
+
+    window.saveResChanges = async function (event) {
+      event.preventDefault();
+      const userSnap = await get(ref(savorDB, `user/${loggedUser}`));
+      const userData = userSnap.val();
+      const restTarget = userData.rest;
+      const restname = restTarget;
+      if (!restname) { alert("No restaurant found!"); return; }
+
+      const email    = document.getElementById('fb-email').value.trim();
+      const manager  = document.getElementById('fb-fullName').value.trim();
+      const phoneNum = document.getElementById('fb-phoneNumber').value.trim();
+      const city     = document.getElementById('fb-city').value.trim();
+      const country  = document.getElementById('fb-country').value.trim();
+      const state    = document.getElementById('fb-state').value.trim();
+      const street   = document.getElementById('fb-street1').value.trim();
+      const suite    = document.getElementById('fb-street2').value.trim();
+      const zipCode  = document.getElementById('fb-zip').value.trim();
+      const logoURL  = document.getElementById('logoImage').value.trim();
+      const mapURL   = document.getElementById('mapPreviewImage').value.trim();
+      const description = document.getElementById('restDescription').value.trim();
+
+      update(ref(savorDB, `rest/${restname}/Info`), {
+        "Email:":    email,
+        "Manager:":  manager,
+        "phoneNum:": phoneNum,
+        "Logo URL:": logoURL,
+        "Description:": description,
+
+        Address: {
+          "City:":     city,
+          "Country:":  country,
+          "State:":    state,
+          "Street:":   street,
+          "Suite:":    suite,
+          "Zip Code:": zipCode
+        }
+      })
+      update(ref(savorDB, `rest/${restname}`), { "image": mapURL })
+        .then(() => alert("Restaurant updated successfully!"))
+        .catch(err => { console.error(err); alert("Error saving restaurant."); });
+    };
+
+    document.getElementById("savePayment").addEventListener("click", savePaymentInfo);
+
+    window.viewOrder   = function () { window.location.href = "orderView.html"; };
+    window.pickupOrder = function () { window.location.href = "orderView.html"; };
+
+    window.logoutUser = function () {
+      localStorage.removeItem("loggedInUser");
+      window.location.href = "index.html";
+    };
+
+    window.updatePass = function (event) {
+      event.preventDefault();
+      const newPassword     = document.getElementById('newPassword').value.trim();
+      const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+      if (newPassword !== confirmPassword) { alert("Passwords do not match. Please re-enter them."); return; }
+
+      set(ref(savorDB, `user/${loggedUser}/password`), newPassword)
+        .then(() => alert("Password updated successfully!"))
+        .catch(err => { console.error(err); alert("Failed to update password."); });
+    };
+
+    async function organizeOrders() {
+      const snapshot = await get(ref(savorDB, `order`));
+      if (!snapshot.exists()) return;
+
+      snapshot.forEach(child => {
+        const order = child.val();
+        if (order.user !== loggedUser) return;
+        const obj = { id: child.key, rest: order.rest, totalPrice: order.totalPrice, status: order.status };
+        order.status === "pending" ? state.pendOrders.push(obj) : state.compOrders.push(obj);
+      });
+    }
+
+    async function renderOrders() {
+      const pendEl = document.getElementById("pending-orders");
+      const compEl = document.getElementById("completed-orders");
+      pendEl.innerHTML = "";
+      compEl.innerHTML = "";
+
+      if (state.pendOrders.length === 0) pendEl.innerHTML = `<p style="color:#888;">No pending orders.</p>`;
+      state.pendOrders.forEach(ord => {
+        const sec = document.createElement("section");
+        sec.className = "card";
+        sec.innerHTML = `<div class="hd"><div class="row"><div class="title">#${ord.id}</div><div class="rest">${ord.rest}</div><div class="totalPrice">$${Number(ord.totalPrice).toFixed(2)}</div></div></div>`;
+        sec.addEventListener("click", () => { sessionStorage.setItem("currOrder", ord.id); pickupOrder(); });
+        pendEl.appendChild(sec);
+      });
+
+      if (state.compOrders.length === 0) compEl.innerHTML = `<p style="color:#888;">No completed orders.</p>`;
+      state.compOrders.forEach(ord => {
+        const sec = document.createElement("section");
+        sec.className = "card";
+        sec.innerHTML = `<div class="hd"><div class="row"><div class="title">#${ord.id}</div><div class="rest">${ord.rest}</div><div class="totalPrice">$${Number(ord.totalPrice).toFixed(2)}</div></div></div>`;
+        sec.addEventListener("click", () => { sessionStorage.setItem("currOrder", ord.id); viewOrder(); });
+        compEl.appendChild(sec);
+      });
+    }
+
+    function confirmDelete() {
+      if (confirm("Are you sure you want to delete your account?")) deleteAccount();
+    }
+
+    async function deleteAccount() {
+      try {
+        await remove(ref(savorDB, `user/${loggedUser}`));
+        localStorage.removeItem("loggedInUser");
+        window.location.href = "index.html";
+      } catch (err) { console.error("Error deleting account:", err); }
+    }
+
+    (async () => {
+      await organizeOrders();
+      renderOrders();
+    })();
+  </script>
+</body>
+</html>

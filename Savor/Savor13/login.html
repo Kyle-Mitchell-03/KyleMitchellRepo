@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">  <title>SAVOR Login</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100dvh;
+      background: url("S5.png") no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Arial Rounded MT Bold', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Back button ── */
+    .back-btn {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 100;
+      background-color: #0a5a2e;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      padding: 8px 16px;
+      font-size: 20px;
+      cursor: pointer;
+      transition: 0.3s;
+      line-height: 1;
+    }
+    .back-btn:hover  { background-color: #118f54; transform: scale(1.05); }
+    .back-btn:active { transform: scale(0.95); }
+
+    /* ── Top logo ── */
+    .title-overlay {
+      width: 100%;
+      padding: 14px 0 8px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .title-link { text-decoration: none; color: inherit; }
+
+    .title-pickup {
+      font-size: clamp(28px, 10vw, 40px);
+      color: #0a5a2e;
+      margin: 0;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-shadow:
+        0 3px 0 #c8e1c8,
+        0 6px 0 #a8d1a8,
+        0 9px 10px rgba(0,0,0,0.25);
+    }
+
+    /* ── Centered card area ── */
+    .login-overlay {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px 16px 40px;
+    }
+
+    /* ── Card ── */
+    .login-box {
+      background: rgba(255,255,255,0.9);
+      border-radius: 25px;
+      padding: 36px 24px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+      text-align: center;
+      width: 100%;
+      max-width: 460px;
+    }
+
+    /* ── Inputs ── */
+    .login-input {
+      display: block;
+      width: 100%;
+      padding: 14px 15px;
+      margin-bottom: 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;        /* prevents iOS auto-zoom */
+      font-family: inherit;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      transition: box-shadow 0.25s ease;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .login-input:focus {
+      outline: none;
+      box-shadow: 0 0 10px rgba(17,143,84,0.4);
+    }
+
+    /* ── Submit button ── */
+    .login-submit {
+      background-color: #0a5a2e;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      width: 100%;
+      padding: 15px;
+      font-size: 20px;
+      font-family: inherit;
+      font-weight: bold;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 8px;
+    }
+    .login-submit:hover  { background-color: #118f54; transform: scale(1.03); }
+    .login-submit:active { transform: scale(0.97); }
+
+    /* ── Links ── */
+    .login-links {
+      margin-top: 28px;
+      font-size: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .login-links a {
+      color: #0a5a2e;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    .login-links a:hover { text-decoration: underline; color: #118f54; }
+
+    /* ── Tablet / desktop: restore wider card ── */
+    @media (min-width: 520px) {
+      .login-box {
+        padding: 60px 80px;
+      }
+
+      .login-input {
+        font-size: 18px;
+        padding: 15px;
+        margin-bottom: 28px;
+      }
+
+      .login-submit {
+        width: auto;
+        padding: 18px 55px;
+        font-size: 22px;
+      }
+
+      .login-links {
+        flex-direction: row;
+        justify-content: center;
+        gap: 40px;
+        font-size: 18px;
+      }
+    }
+    
+    @media(max-width:599px)
+    {
+        .title-overlay{
+            padding-top: calc(env(safe-area-inset-top) + 10px);
+        }
+        .back-btn{
+            margin-top: calc(env(safe-area-inset-top) + 10px);
+        }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Back button -->
+  <button class="back-btn" onclick="backPress()">←</button>
+
+  <!-- Logo -->
+  <div class="title-overlay">
+    <a href="index.html" class="title-link">
+      <h1 class="title-pickup">SAVOR</h1>
+    </a>
+  </div>
+
+  <!-- Login card -->
+  <div class="login-overlay">
+    <div class="login-box">
+
+      <input
+        type="text"
+        id="username"
+        class="login-input"
+        placeholder="Username"
+        autocomplete="username"
+        inputmode="text"
+        enterkeyhint="next"
+      >
+      <input
+        type="password"
+        id="password"
+        class="login-input"
+        placeholder="Password"
+        autocomplete="current-password"
+        enterkeyhint="go"
+      >
+
+      <button class="login-submit" onclick="submitLogin()">LOGIN</button>
+
+      <div class="login-links">
+        <a href="#" onclick="forgotAcc()">Forgot Username / Password?</a>
+        <a href="#" onclick="createAcc()">Create Account!</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+    const firebaseConfig = { databaseURL: "https://savordatabase-default-rtdb.firebaseio.com" };
+    const app = initializeApp(firebaseConfig);
+    const savorDB = getDatabase(app);
+
+    window.backPress = function () {
+      window.location.href = "index.html";
+    };
+
+    window.submitLogin = function () {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!username || !password) {
+        alert('Please enter both username and password.');
+        return;
+      }
+
+      const passRef = ref(savorDB, `user/${username}/password`);
+
+      get(passRef)
+        .then(snapshot => {
+          if (snapshot.exists()) {
+            const storedPassword = snapshot.val();
+            if (storedPassword === password) {
+              localStorage.setItem("loggedInUser", username);
+              window.location.href = "index.html";
+            } else {
+              alert('Incorrect password');
+            }
+          } else {
+            alert('No such user');
+          }
+        })
+        .catch(err => console.error('Error reading password:', err));
+    };
+
+    window.createAcc = function () {
+      window.location.href = "create_acc.html";
+    };
+
+    window.forgotAcc = function () {
+      window.location.href = "forgot_acc.html";
+    };
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === "Enter") submitLogin();
+    });
+  </script>
+</body>
+</html>

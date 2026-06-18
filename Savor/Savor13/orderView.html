@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Order View - SAVOR</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100dvh;
+      background: url("/S6.png") no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Arial Rounded MT Bold', sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Sticky top bar ── */
+    .title-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.93);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      flex-shrink: 0;
+    }
+
+    .title-link { text-decoration: none; color: inherit; }
+
+    .title-pickup {
+      font-size: clamp(24px, 8vw, 40px);
+      color: #0a5a2e;
+      margin: 0;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-shadow:
+        0 3px 0 #c8e1c8,
+        0 6px 0 #a8d1a8,
+        0 9px 10px rgba(0,0,0,0.25);
+    }
+
+    .settings-btn {
+      position: absolute;
+      right: 16px;
+      display: flex;
+      align-items: center;
+    }
+
+    .settings-icon {
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+    }
+
+    /* ── Page scroll area ── */
+    .page-body {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 16px 16px 40px;
+    }
+
+    /* ── Card ── */
+    .login-box {
+      background: rgba(255,255,255,0.93);
+      border-radius: 25px;
+      padding: 24px 20px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+      text-align: center;
+      width: 100%;
+      max-width: 680px;
+    }
+
+    .pickup {
+      font-size: clamp(20px, 6vw, 28px);
+      color: #0a5a2e;
+      margin: 0 0 16px;
+    }
+
+    /* ── Map ── */
+    #pickup-map {
+      width: 100%;
+      height: 220px;
+      border-radius: 18px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    }
+
+    @media (min-width: 480px) {
+      #pickup-map { height: 300px; }
+    }
+
+    /* ── Directions button ── */
+    .login-submit {
+      background-color: #0a5a2e;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      width: 100%;
+      padding: 14px;
+      font-size: 17px;
+      font-family: inherit;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-bottom: 14px;
+    }
+    .login-submit:hover  { background-color: #118f54; transform: scale(1.03); }
+    .login-submit:active { transform: scale(0.97); }
+    .login-submit:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ── Info bubble ── */
+    .info-bubble {
+      background: #f4faf6;
+      border-radius: 16px;
+      border: 1px solid rgba(17,143,84,0.15);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      padding: 16px;
+      text-align: left;
+      margin-bottom: 16px;
+    }
+
+    .bubble-content { display: flex; flex-direction: column; gap: 6px; }
+
+    .bubble-label {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #0a5a2e;
+    }
+
+    .bubble-value {
+      font-size: 0.95rem;
+      color: #333;
+      line-height: 1.4;
+    }
+
+    /* ── Order items list ── */
+    #items { font-size: 0.9rem; color: #444; line-height: 1.8; }
+
+    /* ── Confirm button ── */
+    .actions { margin-top: 4px; }
+
+    .cancel-btn {
+      background-color: #b91c1c !important;
+      margin-left: 0;
+    }
+
+    .cancel-btn:hover {
+      background-color: #ef4444 !important;
+    }
+
+    /* ── Routing panel ── */
+    .leaflet-routing-container {
+      background: rgba(255,255,255,0.95) !important;
+      border-radius: 18px !important;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.25) !important;
+      width: 240px !important;
+      overflow: hidden !important;
+      border: none !important;
+      z-index: 999999 !important;
+    }
+    .leaflet-routing-alt,
+    .leaflet-routing-geocoders,
+    .leaflet-routing-add-waypoint,
+    .leaflet-routing-error { display: none !important; }
+
+    /* ── Desktop: wider card, side-by-side buttons ── */
+    @media (min-width: 520px) {
+      .actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+      }
+      .login-box { padding: 32px 40px; }
+      .login-submit { width: auto; padding: 14px 44px; font-size: 18px; }
+      .actions { display: flex; justify-content: center; }
+    }
+
+    @media (max-width: 599px) {
+        .title-bar {
+          padding-top: calc(env(safe-area-inset-top) + 10px);
+        }
+          
+      }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky top bar -->
+  <div class="title-bar">
+    <a href="/index.html" class="title-link">
+      <h1 class="title-pickup" onclick="clearStorage()">SAVOR</h1>
+    </a>
+    <button class="settings-btn" onclick="handleLogin()" style="background:none;border:none;cursor:pointer;">
+        <img src="/cog.png" alt="Settings" class="settings-icon">
+    </button>
+  </div>
+
+  <!-- Page content -->
+  <div class="page-body">
+    <div class="login-box">
+
+      <h2 class="pickup">Order View</h2>
+
+      <!-- Map -->
+      <div id="pickup-map"></div>
+
+      <!-- Directions -->
+      <button type="button" class="login-submit" id="direction-btn">📍 Get Directions</button>
+
+      <!-- Order details -->
+      <div class="info-bubble">
+        <div class="bubble-content">
+          <div class="bubble-label"  id="rest-name"></div>
+          <div class="bubble-value"  id="loc"></div>
+          <div class="bubble-value"  id="pickupTime"></div>
+          <div class="bubble-value"  id="orderNum"></div>
+          <div class="bubble-value"  id="items"></div>
+          <div class="bubble-value"  id="tax"></div>
+          <div class="bubble-value"  id="price"></div>
+          <div class="bubble-value"  id="cardNum"></div>
+        </div>
+      </div>
+
+      <!-- Confirm pickup -->
+      <div class="actions">
+        <button type="button" class="login-submit" id="placeOrder">✓ Confirm Pickup</button>
+        <button type="button" class="login-submit cancel-btn" id="cancelOrder">✕ Cancel Order</button>
+      </div>
+      <!-- ADD THE ABILITY TO CANCEL ORDER IF THE USER CHANGES THEIR MIND. I WOULD SAY TO ADD A NEW BUTTON -->
+       <!-- GO TO ORDER DASH TO GIVE THE ABILITY TO DELETE ORDERS-->
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+    const firebaseConfig = { databaseURL: "https://savordatabase-default-rtdb.firebaseio.com" };
+    const app    = initializeApp(firebaseConfig);
+    const savorDB = getDatabase(app);
+
+    // Pull orderID from URL if present
+    const params = new URLSearchParams(window.location.search);
+    const orderIdFromURL = params.get("orderID");
+    if (orderIdFromURL) sessionStorage.setItem("currOrder", orderIdFromURL);
+
+    // Map
+    const map = L.map("pickup-map", {
+      zoomControl: false,
+      attributionControl: false
+    }).setView([34.241461, -118.529286], 14);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
+
+    let userLatLng       = null;
+    let restaurantCoords = null;
+    let routingControl   = null;
+
+    window.clearStorage = function () {
+      sessionStorage.removeItem("clickedOrder");
+      sessionStorage.removeItem("taxRate");
+      sessionStorage.removeItem("currRest");
+      sessionStorage.removeItem("currOrder");
+    };
+
+    function startRouting() {
+      if (!userLatLng || !restaurantCoords) return;
+      if (routingControl) map.removeControl(routingControl);
+
+      routingControl = L.Routing.control({
+        waypoints: [L.latLng(userLatLng), L.latLng(restaurantCoords)],
+        addWaypoints: false,
+        draggableWaypoints: false,
+        show: false,
+        createMarker: () => null
+      }).addTo(map);
+
+      map.fitBounds(L.latLngBounds([userLatLng, restaurantCoords]), { padding: [20, 20] });
+    }
+
+    navigator.geolocation?.getCurrentPosition(
+      pos => {
+        userLatLng = [pos.coords.latitude, pos.coords.longitude];
+        L.marker(userLatLng).addTo(map).bindPopup("Your location");
+        startRouting();
+      },
+      () => console.log("User denied geolocation.")
+    );
+
+    async function fetchAddress(lat, lng) {
+      try {
+        const res  = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+          { headers: { "User-Agent": "S4VOR-Student-Project" } }
+        );
+        const data = await res.json();
+        return data.display_name || "Address not available";
+      } catch (err) {
+        console.error("Address lookup failed", err);
+        return "Address not available";
+      }
+    }
+
+    async function loadOrder() {
+      const orderNum = sessionStorage.getItem("currOrder");
+      if (!orderNum) return;
+
+      const snapshot = await get(ref(savorDB, `order/${orderNum}`));
+      if (!snapshot.exists()) return;
+      const order = snapshot.val();
+
+      const snapshotRest = await get(ref(savorDB, `rest/${order.rest}`));
+      if (!snapshotRest.exists()) return;
+      const restVal = snapshotRest.val();
+
+      restaurantCoords = [restVal.lat, restVal.lng];
+      L.marker(restaurantCoords).addTo(map).bindPopup("Pickup location");
+      startRouting();
+
+      fetchAddress(restVal.lat, restVal.lng).then(address => {
+        document.getElementById("loc").innerHTML = `<strong>${address}</strong>`;
+      });
+
+      document.getElementById("rest-name").innerHTML  = `<strong>${order.rest}</strong>`;
+      document.getElementById("pickupTime").innerHTML = `Pickup: <strong>${order.pickupTime}</strong>`;
+
+      const itemsEl = document.getElementById("items");
+      itemsEl.innerHTML = "";
+      let totItemPrice = 0;
+
+      Object.values(order.items).forEach(item => {
+        const row = document.createElement("div");
+        row.textContent = `${item.name} — $${Number(item.unitPrice).toFixed(2)} × ${item.qty} = $${(item.unitPrice * item.qty).toFixed(2)}`;
+        itemsEl.appendChild(row);
+        totItemPrice += item.unitPrice * item.qty;
+      });
+
+      document.getElementById("tax").innerHTML   = `Tax: <strong>$${(order.totalPrice - totItemPrice).toFixed(2)}</strong>`;
+      document.getElementById("price").innerHTML = `Total: <strong>$${Number(order.totalPrice).toFixed(2)}</strong>`;
+      document.getElementById("cardNum").innerHTML = `Card: <strong>**** **** **** ${String(order.cardNumber).slice(-4)}</strong>`;
+    }
+
+    async function checkStatus() {
+      const orderNum = sessionStorage.getItem("currOrder");
+      if (!orderNum) return;
+      const snapshot = await get(ref(savorDB, `order/${orderNum}`));
+      if (!snapshot.exists()) return;
+      const order = snapshot.val();
+      if (order.status !== "pending") {
+        document.getElementById("placeOrder").style.display = "none";
+        document.getElementById("cancelOrder").style.display = "none";
+      }
+    }
+
+    window.handleLogin = async function() {
+      const userId = localStorage.getItem("loggedInUser");
+      if (!userId){
+        clearStorage();
+        window.location.href = "/login.html";
+        return;
+      };
+
+      const userSnap = await get(ref(savorDB, `user/${userId}`));
+      const userData = userSnap.val();
+      const type = userData?.accountType;
+
+      if (type === "fb") {
+        sessionStorage.setItem("ownedRest", userData.rest ?? "");
+        clearStorage();
+        window.location.href = "/fb_acc.html";
+      }
+      else if (type === "business") {
+        sessionStorage.setItem("ownedRest", userData.rest ?? "");
+        clearStorage();
+        window.location.href = "/res_dash.html";
+      }
+      else
+      {
+        clearStorage();
+        window.location.href = "/user_acc.html";
+      }
+    }
+
+    async function getDirections() {
+  const currOrderS = sessionStorage.getItem("currOrder");
+  const orderRestSnap = await get(ref(savorDB, `order/${currOrderS}/rest`));
+  const restName = orderRestSnap.val();
+  const restSnap = await get(ref(savorDB, `rest/${restName}`));
+  const r = restSnap.val();
+
+  const { lat, lng } = r;
+
+  // Use coordinates directly — no fetchAddress needed, works on all browsers
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
+
+  if (isIOS) {
+    // Try Apple Maps deep link first (opens Maps app on iOS)
+    // Fallback: Google Maps app via comgooglemaps://, then browser
+    const appleMapsUrl = `maps://?daddr=${lat},${lng}`;
+    const googleMapsAppUrl = `comgooglemaps://?daddr=${lat},${lng}`;
+    const googleMapsBrowserUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+
+    // Try to open Google Maps app; if not installed, fall back to Apple Maps, then browser
+    const start = Date.now();
+    window.location.href = googleMapsAppUrl;
+
+    setTimeout(() => {
+      if (Date.now() - start < 1500) {
+        // Google Maps app didn't open, try Apple Maps
+        window.location.href = appleMapsUrl;
+      }
+    }, 500);
+
+    setTimeout(() => {
+      if (Date.now() - start < 2000) {
+        // Neither app opened, fall back to browser
+        window.open(googleMapsBrowserUrl, '_blank');
+      }
+    }, 1000);
+
+  } else if (isAndroid) {
+    // Android: use geo: URI which prompts user to choose their maps app
+    // Falls back to Google Maps browser if no app handles it
+    const geoUrl = `geo:${lat},${lng}?q=${lat},${lng}`;
+    const googleMapsBrowserUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+
+    const start = Date.now();
+    window.location.href = geoUrl;
+
+    setTimeout(() => {
+      if (Date.now() - start < 1500) {
+        window.open(googleMapsBrowserUrl, '_blank');
+      }
+    }, 1000);
+
+  } else {
+    // Desktop: open in browser tab, works on Chrome, Safari, Firefox, Edge
+    window.open(
+      `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+      '_blank'
+    );
+  }
+}
+
+// --- Cancel Order Logic ---
+document.getElementById("cancelOrder").addEventListener("click", async () => {
+  const orderNum = sessionStorage.getItem("currOrder");
+  if (!orderNum) return;
+
+  const confirmCancel = confirm("Are you sure you want to cancel this order?");
+  if (!confirmCancel) return;
+
+  try {
+    const orderRef = ref(savorDB, `order/${orderNum}`);
+    
+    // You can either delete the order entirely using remove(orderRef)
+    // or update the status so it shows as cancelled in the history.
+    await update(orderRef, { status: "Cancelled" });
+    
+    alert("Order has been cancelled.");
+    
+    // Redirect the user back to their account/dashboard
+    window.handleLogin(); 
+  } catch (err) {
+    console.error("Error cancelling order:", err);
+    alert("Failed to cancel order.");
+  }
+});
+
+    document.getElementById("direction-btn").addEventListener("click", getDirections);
+
+    document.getElementById("placeOrder").addEventListener("click", async () => {
+      const orderNum = sessionStorage.getItem("currOrder");
+      if (!orderNum) return;
+
+      const orderRef = ref(savorDB, `order/${orderNum}`);
+      const snapshot = await get(orderRef);
+      if (!snapshot.exists()) return;
+
+      const order = snapshot.val();
+      if (order.status === "Completed") { alert("Order already completed"); return; }
+
+      await update(orderRef, { status: "Completed" });
+      clearStorage();
+      handleLogin();
+    });
+
+    loadOrder();
+    checkStatus();
+  </script>
+</body>
+</html>
