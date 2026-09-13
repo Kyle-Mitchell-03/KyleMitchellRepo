@@ -15,15 +15,15 @@ CREATE TABLE Katakana(
 CREATE TABLE Kanji(
     id INT AUTO_INCREMENT PRIMARY KEY,
     Word VARCHAR(50) CHARACTER SET utf8mb4 NOT NULL,
-    Romanji VARCHAR (50) CHARACTER SET utf8mb4 NOT NULL,
-    Def VARCHAR(50) CHARACTER SET utf8mb4 NOT NULL
+    Romanji JSON NOT NULL,
+    Def JSON NOT NULL
 ); 
 
 CREATE TABLE Glossary(
     id INT AUTO_INCREMENT PRIMARY KEY,
     Word VARCHAR(50) CHARACTER SET utf8mb4 NOT NULL,
-    Romanji VARCHAR(50) CHARACTER SET utf8mb4 NOT NULL,
-    Def VARCHAR(50) CHARACTER SET utf8mb4 NOT NULL
+    Romanji JSON NOT NULL,
+    Def JSON NOT NULL
 ); 
 
 CREATE TABLE Sentences(
@@ -69,10 +69,10 @@ INSERT INTO Katakana (Word, Def) VALUES
 ('プ','pu');
 
 INSERT INTO Kanji (Word, Romanji, Def) VALUES
-('日','nichi','day'), ('日','jitsu','day'), ('日','hi','sun'), ('日','ka','counter for days');
+('日', '["hi"]', '["sun", "day", "sunlight"]');
 
 INSERT INTO Sentences (Sentence, Def) VALUES
 ('これは小さいです','This is small');
 
 INSERT INTO Glossary (Word, Romanji, Def) VALUES
-('あなた','anata','You');
+('あなた', '["anata"]', '["You"]');

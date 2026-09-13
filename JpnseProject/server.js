@@ -1,7 +1,8 @@
 const express = require('express');
 const path = require('path');
 const mysql = require('mysql2/promise');
- 
+
+require('dotenv').config();
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -60,7 +61,7 @@ app.post('/api/Kanji', async (req, res, next) => {
  
         const [result] = await pool.query(
             'INSERT INTO Kanji (Word, Romanji, Def) VALUES (?, ?, ?)',
-            [Word, Romanji, Def]
+            [Word, JSON.stringify(Romanji), JSON.stringify(Def)]
         );
  
         res.status(201).json({ id: result.insertId });
@@ -99,7 +100,7 @@ app.post('/api/Glossary', async (req, res, next) => {
  
         const [result] = await pool.query(
             'INSERT INTO Glossary (Word, Romanji, Def) VALUES (?, ?, ?)',
-            [Word, Romanji, Def]
+            [Word, JSON.stringify(Romanji), JSON.stringify(Def)]
         );
  
         res.status(201).json({ id: result.insertId });
@@ -162,7 +163,7 @@ app.put('/api/Kanji/:id', async (req, res) => {
  
         await pool.query(
             `UPDATE Kanji SET WORD = ?, Romanji = ?, Def = ? WHERE id = ?`,
-            [Word, Romanji, Def, id]
+            [Word, JSON.stringify(Romanji), JSON.stringify(Def), id]
         );
  
         res.json({ message: 'Updated' });
@@ -196,7 +197,7 @@ app.put('/api/Glossary/:id', async (req, res) => {
  
         await pool.query(
             `UPDATE Glossary SET WORD = ?, Romanji = ?, Def = ? WHERE id = ?`,
-            [Word, Romanji, Def, id]
+            [Word, JSON.stringify(Romanji), JSON.stringify(Def), id]
         );
  
         res.json({ message: 'Updated' });

@@ -1,41 +1,175 @@
-table{
-    margin-left: 5px; 
-    margin-right: 5px; 
-    width: auto; 
-    height: auto; 
+*{
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: bisque;
+}
+
+#wrapper {
+    width: 100%;
+    max-width: 900px;
+    min-height: 100vh;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: bisque;
+    border: 1px solid black;
+}
+
+table {
+    width: 100%;
+    height: auto;
     border-collapse: collapse;
 }
 
-td {
-    margin-left: auto;
-    margin-right: auto;
+td, th {
+    padding: 8px;
+    text-align: center;
+    vertical-align: middle;
 }
 
-button{
-    border-radius: 5px; 
-    border: none; 
-    cursor:pointer; 
-    color:black; 
-    background-color:lightcoral; 
-    transition: background-color 0.3s ease; 
-    padding:10px 20px; 
+#main {
+    max-width: 500px;
+    margin: 40px auto;
+}
+
+#define {
     width: 100%;
-    border-width: 10%; 
-    border-color: black;
 }
 
-button:hover{
-    background-color: rgb(238, 75, 75)
+button {
+    border-radius: 5px;
+    border: 1px solid black;
+    cursor: pointer;
+    color: black;
+    background-color: lightcoral;
+    transition: background-color 0.3s ease;
+    padding: 10px 20px;
+    width: 100%;
+    font-size: 16px;
 }
 
-#wrapper{
-    display: inline-block;
-    padding: 15px;
-    background-color: bisque;
-    border-width: 1px;
-    border-style: solid;
-    border-color: black;
-    margin: 0 auto; 
-    display: block; 
-    width: max-content;
+button:hover {
+    background-color: rgb(238, 75, 75);
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+
+#output {
+    padding: 10px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+@media (max-width: 600px) {
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+    }
+
+    body {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    #wrapper {
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 100vh;
+        padding: 10px;
+        margin: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    #main {
+        width: 100%;
+        margin: 20px auto;
+    }
+
+    #main td,
+    #main th {
+        padding: 6px;
+    }
+
+     #define {
+        width: 100%;
+        table-layout: fixed;
+        font-size: 13px;
+    }
+
+    #define td,
+    #define th {
+        padding: 4px;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    #define button {
+        padding: 7px 3px;
+        font-size: 12px;
+    }
+
+    #define td:nth-child(1),
+    #define th:nth-child(1) {
+        width: 20%;
+    }
+
+    #define td:nth-child(2),
+    #define th:nth-child(2) {
+        width: 25%;
+    }
+
+     #define td:nth-child(3),
+    #define th:nth-child(3) {
+        width: 30%;
+    }
+
+    #define td:nth-child(4),
+    #define th:nth-child(4),
+    #define td:nth-child(5),
+    #define th:nth-child(5) {
+        width: 12.5%;
+    }
+
+    input {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+    }
+
+    button {
+        padding: 12px 8px;
+        font-size: 15px;
+    }
+
+    #wrapper > table {
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    td,
+    th {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
 }
