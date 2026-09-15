@@ -23,13 +23,7 @@ Create MySQL database:
 
 Run:
 
-database/schema.sql
-
-Optional:
-
-Run:
-
-database/seed.sql
+database/jap.sql
 
 
 ## Environment Variables
