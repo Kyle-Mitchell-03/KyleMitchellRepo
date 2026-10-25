@@ -1,0 +1,40 @@
+DROP DATABASE IF EXISTS Travel;
+CREATE DATABASE Travel;
+USE Vocab;
+
+CREATE TABLE Trips (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    Title VARCHAR(250),
+    destination VARCHAR(250),
+    startDate DATE NOT NULL,
+    endDate DATE NOT NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    lastViewed TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB DEFAULT charset=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE days (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tripID INT NOT NULL,
+    dayNumber INT NOT NULL,
+    dayDate DATE NOT NULL,
+    notes TEXT,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP.
+
+    FOREIGN KEY (tripID) REFERENCES Trips(id) ON DELETE CASCADE,
+    UNIQUE KEY uniqueTripDay (tripID,dayNumber)
+) ENGINE = InnoDB DEAFULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE activities (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    dayID INT NOT NULL,
+    activityName VARCHAR(250) NOT NULL,
+    location VARCHAR(250),
+    startTime TIME,
+    endTime TIME,
+    cost DECIMAL(10,2) DEFAULT 0.00,
+    confirmationNumber VARCHAR(100),
+    notes TEXT,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (dayID) REFERENCES days(id) ON DELETE CASCADE
+) ENGINE = InnoDB DEAFULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
