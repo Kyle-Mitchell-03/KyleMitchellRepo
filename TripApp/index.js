@@ -96,6 +96,60 @@ async function createTrip() {
     const name = document.getElemnentById("name");
     const startdate = document.getElementById("Startdate");
     const enddate = document.getElementById("Enddate");
+
+    if(!name || !startdate || !enddate)
+    {
+        //Make Error Div filled
+    }
+    try
+    {
+        const response = await(fetch("/api/Trips", {
+            method: "POST",
+            headers:{
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                Title: name,
+                startDate: startdate,
+                endDate: enddate
+                //createdAt: timestamp made
+            })
+        }));
+        const result = await response.json();
+        if(!response.ok)
+        {
+            throw new Error(result.error || "Creation Failed");
+        }
+        //New "Created" UI Loaded -> wraps.innerHTML = `....`
+    }
+    catch(err)
+    {
+        console.error("Failed to add trip:",err);
+        //New "Failed" UI loaded -> wraps.innerHTML = `....`
+    }
+}
+
+async function deleteTrip(id) {
+    try
+    {
+        const response = await fetch(`/api/Trips/${id}`, {
+            method: "DELETE"
+        });
+
+        if(!response.ok)
+        {
+            throw new Error(`Delete Failed: ${response.status}`)
+        }
+        loadTrips();
+    }
+    catch(err)
+    {
+        console.error("Failed to delete Trip:",err);
+    }
+}
+
+async function loadEditTrip() {
+    //Load new edit UI
 }
 
 
