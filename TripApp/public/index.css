@@ -1,0 +1,138 @@
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #222;
+        }
+
+        /* Main app screen */
+        .app {
+            width: 100%;
+            max-width: 480px;
+            min-height: 100dvh;
+            margin: 0 auto;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            background-color: #0a5a2e;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 24px;
+            text-align: center;
+        }
+
+        header h2 {
+            background-color: rgba(253, 0, 0, 0.413);
+            color: white;
+            font-size:15px;
+            text-align:center;
+        }
+
+        /* Main content */
+        main {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: #f8f8f8;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 5px #00000010;
+        }
+
+        .dashboard {
+            background-color: #f8f8f8;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 5px #00000010;
+        }
+
+        input[type ="search"] {
+            width: 100%;
+            box-sizing:border-box;
+            border-radius: 50px;
+
+            border: 1px solid #ccc;
+            padding: 10px 20px;
+            outline: none;
+        }
+
+        input[type="search"]::placeholder {
+            text-align: center;
+        }
+
+        input[type = "param"]{
+            width: 100%;
+            box-sizing:border-box;
+            border-radius: 50px;
+
+            border: 1px solid #ccc;
+            padding: 10px 20px;
+            outline: none;
+        }
+
+        input[type = "param"]::placeholder {
+            text-align: center;
+        }
+
+        .card h2 {
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .card p {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-top: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: #118f54;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* Bottom navigation */
+        nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 14px 5px;
+            background-color: white;
+            border-top: 1px solid #ddd;
+            position: sticky;
+            bottom: 0;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #555;
+            font-size: 13px;
+            text-align: center;
+            padding: 5px;
+        }
+
+        nav a.active {
+            color: #0a5a2e;
+            font-weight: bold;
+        }
