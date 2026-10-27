@@ -62,7 +62,7 @@ async function tripPage() {
             throw new Error(`Server returned ${response.status}`);
         }
         const tripList = await response.json();
-        tripDiv.innerHTML = tripList.map(t => `<p>${t.Title}</p>`).join("");
+        tripDiv.innerHTML = tripList.map(t => `<button id = "tripButton" onclick = "loadTripPage(${t.id})">${t.Title}</button>`).join("");
     } catch (err) {
         console.log("Failed to load Trips:", err);
         errorDiv.innerHTML = `<h2>Failed to load Trips</h2>`;
@@ -163,6 +163,63 @@ async function createTrip() {
     }
 }
 
+async function fetchDays(id){
+    let dayList;
+    try {
+        const response = await fetch(`/api/days/${id}`);
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status}`);
+        }
+        dayList = await response.json();
+    } catch (err) {
+        console.log("Failed to load Days:", err);
+        const errorDiv = document.getElementById("error");
+        errorDiv.innerHTML = `<h2>Failed to load Days</h2>`;
+    }
+    return dayList;
+}
+
+async function fetchTrip(id){
+    let trip;
+    try{
+        const response = await fetch(`/api/Trips/${id}`);
+        if(!response.ok)
+        {
+            throw new Error(`Server returned ${response.status}`);
+        }
+        trip = await response.json();
+    }
+    catch(err)
+    {
+        console.log("Failed to load Trip: ",err);
+        const errorDiv = document.getElementById("error");
+        errorDiv.innerHTML = `<h2> Failed to load Trip </h2>`
+    }
+    return trip;
+}
+
+async function loadTripPage(id){
+    let trip = fetchTrip(id);
+    wraps.innerHTML = `
+        <div class = "error"></div>
+        <header>
+            <h1> ${trip.Title} </h1>
+        </header>
+        <p> ${trip.destination} </p>
+        <div class = "card" id = "days"></div>
+        <div class="card">
+            <button onclick="home()">Home</button>
+        </div>
+    `;
+    
+
+    const dayDiv = document.getElementById("days");
+    let days = fetchDays(id);
+    dayDiv.innerHTML = days.map(t => `<button id = "tripButton" onclick = "loadTripPage(${t.id})">${t.Title}</button>`).join("");
+
+
+}
+
 async function deleteTrip(id) {
     try {
         const response = await fetch(`/api/Trips/${id}`, {
@@ -179,7 +236,7 @@ async function deleteTrip(id) {
     }
 }
 
-async function loadEditTrip() {
+async function loadEditTrip(id) {
     //Load new edit UI
 }
 
