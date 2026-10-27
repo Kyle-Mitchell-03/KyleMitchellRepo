@@ -42,6 +42,41 @@ app.get('/api/Trips', makeListHandler('Trips'));
 app.get('/api/days',makeListHandler('days'));
 app.get('/api/activities',makeListHandler('activities'));
 
+app.get('/api/Trips/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [rows] = await pool.query('SELECT * FROM Trips WHERE id = ?', [id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Trip not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//GET ROUTE FOR DAYS WITH GIVEN TRIP ID
+app.get('/api/days/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [rows] = await pool.query('SELECT * FROM days WHERE tripID = ?', [id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Days not found' });
+    }
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/Trips', async (req,res,next) => {
     try{
         const{Title, startDate, endDate} = req.body;

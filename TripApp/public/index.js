@@ -62,7 +62,10 @@ async function tripPage() {
             throw new Error(`Server returned ${response.status}`);
         }
         const tripList = await response.json();
-        tripDiv.innerHTML = tripList.map(t => `<button id = "tripButton" onclick = "loadTripPage(${t.id})">${t.Title}</button>`).join("");
+        tripDiv.innerHTML = tripList.map(t => `<div class = "card">
+                                                    <button id = "tripButton" onclick = "loadTripPage(${t.id})">${t.Title}</button>
+                                                    <button id = "editTrip" onclick = "loadEditTrip(${t.id})">Edit</button>
+                                                </div>`).join("");
     } catch (err) {
         console.log("Failed to load Trips:", err);
         errorDiv.innerHTML = `<h2>Failed to load Trips</h2>`;
@@ -171,6 +174,7 @@ async function fetchDays(id){
             throw new Error(`Server returned ${response.status}`);
         }
         dayList = await response.json();
+        console.log(dayList);
     } catch (err) {
         console.log("Failed to load Days:", err);
         const errorDiv = document.getElementById("error");
@@ -180,7 +184,7 @@ async function fetchDays(id){
 }
 
 async function fetchTrip(id){
-    let trip;
+    let trip = "";
     try{
         const response = await fetch(`/api/Trips/${id}`);
         if(!response.ok)
@@ -199,7 +203,7 @@ async function fetchTrip(id){
 }
 
 async function loadTripPage(id){
-    let trip = fetchTrip(id);
+    let trip = await fetchTrip(id);
     wraps.innerHTML = `
         <div class = "error"></div>
         <header>
@@ -214,8 +218,9 @@ async function loadTripPage(id){
     
 
     const dayDiv = document.getElementById("days");
-    let days = fetchDays(id);
-    dayDiv.innerHTML = days.map(t => `<button id = "tripButton" onclick = "loadTripPage(${t.id})">${t.Title}</button>`).join("");
+    let days = await fetchDays(id);
+    console.log(days)
+    dayDiv.innerHTML = days.map(t => `<button id = "tripButton" onclick = "loadTripPage(${id})">${trip.Title}</button>`).join("");
 
 
 }
@@ -238,6 +243,8 @@ async function deleteTrip(id) {
 
 async function loadEditTrip(id) {
     //Load new edit UI
+    const response = fetchTrip(id);
+    console.log(response);
 }
 
 
