@@ -4,10 +4,11 @@ const mysql = require('mysql2/promise');
 
 //require('dotenv').config();
 const pool = mysql.createPool({
-    host:'localhost', //process.env.DB_HOST,
+    host: 'localhost', //process.env.DB_HOST,
     user: 'root',//process.env.DB_USER,
     password: '',//process.env.DB_PASSWORD,
-    database: 'Travel' //process.env.DB_NAME
+    database: 'Travel', //process.env.DB_NAME
+    dateStrings: true
 });
 
 const app = express();
@@ -39,78 +40,100 @@ function makeListHandler(table) {
 }
 
 app.get('/api/Trips', makeListHandler('Trips'));
-app.get('/api/days',makeListHandler('days'));
-app.get('/api/activities',makeListHandler('activities'));
+app.get('/api/days', makeListHandler('days'));
+app.get('/api/activities', makeListHandler('activities'));
 
 app.get('/api/Trips/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
+    try {
+        const { id } = req.params;
 
-    const [rows] = await pool.query('SELECT * FROM Trips WHERE id = ?', [id]);
+        const [rows] = await pool.query('SELECT * FROM Trips WHERE id = ?', [id]);
 
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'Trip not found' });
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Trip not found' });
+        }
+
+        res.json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
     }
-
-    res.json(rows[0]);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
 });
 
 //GET ROUTE FOR DAYS WITH GIVEN TRIP ID
 app.get('/api/days/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
+    try {
+        const { id } = req.params;
 
-    const [rows] = await pool.query('SELECT * FROM days WHERE tripID = ?', [id]);
+        const [rows] = await pool.query('SELECT * FROM days WHERE tripID = ? ORDER BY dayDate ASC', [id]);
+        res.json(rows);
 
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'Days not found' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
     }
-
-    res.json(rows[0]);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
 });
 
-app.post('/api/Trips', async (req,res,next) => {
-    try{
-        const{Title, startDate, endDate} = req.body;
+function getDateRange(startDate, endDate) {
+    const dates = [];
+    const current = new Date(`${startDate}T00:00:00Z`);
+    const end = new Date(`${endDate}T00:00:00Z`);
 
-        console.log('Received body:', req.body);
-        console.log('Title',Title);
-        console.log('startDate', startDate);
-        console.log('endDate',endDate);
-
-        const [result] = await pool.query(
-            'INSERT INTO Trips (Title, startDate, endDate) VALUES (?,?,?)', 
-            [Title,startDate,endDate]
-        );
-        res.status(201).json({id:result.insertId});
+    while (current <= end) {
+        dates.push(current.toISOString().slice(0, 10));
+        current.setUTCDate(current.getUTCDate() + 1);
     }
-    catch(err)
-    {
+    return dates;
+}
+
+app.post('/api/Trips', async (req, res, next) => {
+    const { Title, startDate, endDate } = req.body;
+
+    if (!Title || !startDate || !endDate) {
+        return res.status(400).json({ error: 'Title, startDate, and endDate are required' });
+    }
+    const dates = getDateRange(startDate, endDate);
+    if (dates.length === 0) {
+        return res.status(400).json({ error: 'End date mysr be on or after start date' });
+    }
+    if (dates.length > 366) {
+        return res.status(400).json({ error: 'Trips are limited to 366 days' });
+    }
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        const [result] = await conn.query(
+            `INSERT INTO Trips (Title, startDate, endDate) VALUES (?,?,?)`, [Title, startDate, endDate]
+        );
+        const tripId = result.insertId;
+        const dayRows = dates.map((date, i) => [tripId, i + 1, date]);
+        await conn.query(
+            `INSERT INTO days (tripID, dayNumber, dayDate) VALUES ?`, [dayRows]
+        );
+        await conn.commit();
+        res.status(201).json({ id: tripId, daysCreated: dates.length });
+    }
+    catch (err) {
+        await conn.rollback();
         next(err);
     }
+    finally {
+        conn.release();
+    }
 });
 
-app.delete('/api/Trips/:id', async (req,res, next) => {
-    try{
-        const {id} = req.params;
+app.delete('/api/Trips/:id', async (req, res, next) => {
+    try {
+        const { id } = req.params;
         const [result] = await pool.query('DELETE FROM Trips WHERE id = ?', [id]);
 
-        if(result.affectedRows === 0) {
-            return res.status(404).json({error: 'Trip not found'});
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Trip not found' });
         }
 
-        res.json({message: 'Trip deleted', id});
+        res.json({ message: 'Trip deleted', id });
     }
-    catch(err)
-    {
+    catch (err) {
         next(err);
     }
 })
@@ -119,11 +142,11 @@ app.delete('/api/Trips/:id', async (req,res, next) => {
 app.use('/api', (req, res) => {
     res.status(404).json({ error: 'Not found' });
 });
- 
+
 // ---------- Central error handler ----------
 app.use((err, req, res, next) => {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
 });
- 
+
 app.listen(3000, () => console.log('Server running on http://localhost:3000'));

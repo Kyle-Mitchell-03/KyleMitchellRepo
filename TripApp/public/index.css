@@ -55,6 +55,22 @@
             box-shadow: 0 2px 5px #00000010;
         }
 
+        .button-card{
+            text-align:center;
+        }
+
+        .delete{
+            width: 70%;
+            padding: 14px;
+            margin-top: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: #ff0000;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
         .dashboard {
             background-color: #f8f8f8;
             border-radius: 12px;

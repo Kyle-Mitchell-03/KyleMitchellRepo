@@ -62,9 +62,9 @@ async function tripPage() {
             throw new Error(`Server returned ${response.status}`);
         }
         const tripList = await response.json();
-        tripDiv.innerHTML = tripList.map(t => `<div class = "card">
+        tripDiv.innerHTML = tripList.map(t => `<div class = "card button-card">
                                                     <button id = "tripButton" onclick = "loadTripPage(${t.id})">${t.Title}</button>
-                                                    <button id = "editTrip" onclick = "loadEditTrip(${t.id})">Edit</button>
+                                                    <button class = "delete" id = "delTrip" onclick = "deleteTrip(${t.id})">Delete</button>
                                                 </div>`).join("");
     } catch (err) {
         console.log("Failed to load Trips:", err);
@@ -116,7 +116,8 @@ async function createTrip() {
     const enddate = document.getElementById("Enddate").value;
 
     if (!name || !startdate || !enddate) {
-        //Make Error Div filled
+        document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
+        return;
     }
     try {
         const response = await (fetch("/api/Trips", {
@@ -153,6 +154,31 @@ async function createTrip() {
                 <input type = "param" id = "name" placeholder = "Trip Name">
             </div>
             <div class = "card">
+                <input type = "date" id = "Startdate" placeholder = "StartDate">
+            </div>
+            <div class = "card">
+                <input type = "date" id = "Enddate" placeholder = "EndDate">
+            </div>
+            <button onclick = "createTrip()">
+                Create Trip
+            </button>
+        </main>
+        `;
+    }
+}
+
+async function createDay(id){
+    const trip = fetchTrip(id);
+    wraps.innerHTML(`
+        <main>
+            <header>
+                <h1>${trip.title}</h1>
+            </header>
+            <div id = "error" class = "error"></div>
+            <div class = "card">
+                <input type = "param" id = "currDayDate" placeholder = "StartDate">
+            </div>
+            <div class = "card">
                 <input type = "param" id = "Startdate" placeholder = "StartDate">
             </div>
             <div class = "card">
@@ -162,8 +188,8 @@ async function createTrip() {
                 Create Trip
             </button>
         </main>
-        `;
-    }
+        `);
+
 }
 
 async function fetchDays(id){
@@ -177,8 +203,6 @@ async function fetchDays(id){
         console.log(dayList);
     } catch (err) {
         console.log("Failed to load Days:", err);
-        const errorDiv = document.getElementById("error");
-        errorDiv.innerHTML = `<h2>Failed to load Days</h2>`;
     }
     return dayList;
 }
@@ -203,14 +227,17 @@ async function fetchTrip(id){
 }
 
 async function loadTripPage(id){
-    let trip = await fetchTrip(id);
+    const trip = await fetchTrip(id);
     wraps.innerHTML = `
-        <div class = "error"></div>
+        <div id = "error" class = "error"></div>
         <header>
             <h1> ${trip.Title} </h1>
         </header>
-        <p> ${trip.destination} </p>
+        <p> ${trip.destination ?? ""} </p>
         <div class = "card" id = "days"></div>
+        <div class = "card">
+            <button onclick = "createDay(${trip.id})">Create Day</button>
+        </div>
         <div class="card">
             <button onclick="home()">Home</button>
         </div>
@@ -218,11 +245,20 @@ async function loadTripPage(id){
     
 
     const dayDiv = document.getElementById("days");
-    let days = await fetchDays(id);
-    console.log(days)
-    dayDiv.innerHTML = days.map(t => `<button id = "tripButton" onclick = "loadTripPage(${id})">${trip.Title}</button>`).join("");
+    const days = await fetchDays(id);
 
-
+    if(!days || days.length == 0)
+    {
+        dayDiv.innerHTML = `<p>No days for this trip yet</p>`;
+    }
+    else
+    {
+        dayDiv.innerHTML = days.map(d => `<div class = "card">
+                                            <h1>${d.dayDate}</h1>
+                                            <p>${d.notes}</p>
+                                        </div>
+                                }`).join("");
+    }
 }
 
 async function deleteTrip(id) {
@@ -239,12 +275,7 @@ async function deleteTrip(id) {
     catch (err) {
         console.error("Failed to delete Trip:", err);
     }
-}
-
-async function loadEditTrip(id) {
-    //Load new edit UI
-    const response = fetchTrip(id);
-    console.log(response);
+    tripPage();
 }
 
 
