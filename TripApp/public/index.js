@@ -257,7 +257,7 @@ async function loadTripPage(id){
                                             <h1>${d.dayDate}</h1>
                                             <p>${d.notes}</p>
                                         </div>
-                                }`).join("");
+                                `).join("");
     }
 }
 
