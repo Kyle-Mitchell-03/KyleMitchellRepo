@@ -167,10 +167,10 @@ async function createTrip() {
     }
 }
 
-async function pullDay(dayId){
+async function pullDay(tripId,dayNumber){
     let day;
     try{
-        const response = await fetch(`/api/days/${dayId}`);
+        const response = await fetch(`/api/Trips/${tripId}/days/${dayNumber}`);
         if(!response.ok){
             throw new Error(`Server returned ${response.status}`);
         }
@@ -260,80 +260,13 @@ async function loadTripPage(id){
     else
     {
         dayDiv.innerHTML = days.map(d => `<div class = "card">
-                                            <h1>${d.dayDate}</h1>
+                                            <div class = "headerDiv">
+                                                <h1>${d.dayDate}</h1>
+                                                <button class = "editBtn" onclick = "editDay(${id},${d.dayNumber})">edit</button>
+                                            </div>
                                             <p>${d.notes}</p>
-                                            <button onclick = "editNotes(${d.id})">Edit Notes</button>
-                                            <button onclick = "loadActivties(${d.id})">View Activities</button>
                                         </div>
                                 `).join("");
-    }
-}
-
-async function editNotes(id) {
-    let day = pullDay(id);
-    wraps.innerHTML = `
-        <div id = "error" class = "error">
-        </div>
-        <header>
-            <h1> ${day.dayDate} </h1>
-        </header>
-        
-        <div class = "card">
-            <input type = "param" id = "notes" placeholder = "${day.notes}">
-        </div>
-
-        <div class="card">
-            <button onclick="saveNotes(${id})">Save Notes</button>
-            <button onclick="home()">Home</button>
-        </div>
-
-    `
-}
-
-async function saveNotes(id){
-    let day = pullDay(id);
-    const notes = document.getElementById("notes").value;
-    if (!notes) {
-        document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
-        return;
-    }
-    try {
-        const response = await (fetch(`/api/days/:${id}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                notes: notes
-            })
-        }));
-        const result = await response.json();
-        if (!response.ok) {
-            throw new Error(result.error || "Notes Save Failed");
-        }
-        tripPage();
-    }
-    catch (err) {
-        console.error("Failed to edit notes:", err);
-        wraps.innerHTML = `
-            <div id = "error" class = "error">
-                <header>
-                    <h2>Failed to save Notes</h2>
-                </header>
-            </div>
-            <header>
-                <h1> ${day.dayDate} </h1>
-            </header>
-        
-            <div class = "card">
-                <input type = "param" id = "notes" placeholder = "${day.notes}">
-            </div>
-
-            <div class="card">
-                <button onclick="saveNotes(${id})">Save Notes</button>
-                button onclick="home()">Home</button>
-            </div>
-        `;
     }
 }
 
@@ -352,6 +285,27 @@ async function deleteTrip(id) {
         console.error("Failed to delete Trip:", err);
     }
     tripPage();
+}
+
+async function editDay(tripId,dayNumber){
+    console.log(tripId);
+    console.log(dayNumber);
+    const day = await pullDay(tripId,dayNumber);
+    const trip = await fetchTrip(tripId);
+    wraps.innerHTML = `
+        <div id = "error" class = "error"></div>
+        <header>
+            <h1> ${day.dayDate} </h1>
+        </header>
+        <div class = "card">
+                <input type = "param" id = "note" placeholder = "${day.notes}">
+        </div>
+        <div class = "card" id = "activs"></div>
+        <div class="card">
+            <button onclick="home()">Home</button>
+        </div>
+    `;
+
 }
 
 

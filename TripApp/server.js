@@ -86,17 +86,21 @@ app.get(`/api/activities/:id`, async (req, res) => {
     }
 });
 
-app.get(`/api/days/:dayId`, async (req,res) => {
+app.get(`/api/Trips/:tripId/days/:dayNumber`, async (req,res) => {
     try{
-        const{dayId} = req.params;
-        const rows = await pool.query('SELECT * FROM days where dayID = ?', [dayId]);
-        res.json(rows);
+        const {tripId,dayNumber} = req.params;
+        const[rows] = await pool.query(`SELECT * FROM days WHERE tripId = ? AND dayNumber = ?`, [tripId,dayNumber]);
+        if(rows.length === 0) {
+            return res.status(404).json({error: 'Day not found'});
+        }
+        res.json(rows[0]);
     }
-    catch(err){
-        console.error(err);
-        res.status(500).json({error:err.message});
+    catch(err)
+    {
+        console.log(err);
+        res.status(500).json({error: err.message });
     }
-});
+})
 
 function getDateRange(startDate, endDate) {
     const dates = [];
