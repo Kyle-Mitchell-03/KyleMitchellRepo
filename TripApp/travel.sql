@@ -26,13 +26,13 @@ CREATE TABLE days (
 
 CREATE TABLE activities (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    tripId INT NOT NULL,
     dayID INT NOT NULL,
     activityName VARCHAR(250) NOT NULL,
-    location VARCHAR(250),
+    location VARCHAR(10000),
     startTime TIME,
     endTime TIME,
-    cost DECIMAL(10,2) DEFAULT 0.00,
-    confirmationNumber VARCHAR(100),
+    cost TEXT,
     notes TEXT,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

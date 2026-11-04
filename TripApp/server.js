@@ -114,6 +114,58 @@ function getDateRange(startDate, endDate) {
     return dates;
 }
 
+app.put('/api/Trips/:tripId/days/:dayNumber', async (req, res, next) => {
+    try {
+        const { tripId, dayNumber } = req.params;
+        const { notes } = req.body;
+
+        if (typeof notes !== 'string') {
+            return res.status(400).json({ error: 'Notes are required' });
+        }
+
+        const [result] = await pool.query(
+            'UPDATE days SET notes = ? WHERE tripID = ? AND dayNumber = ?',
+            [notes, tripId, dayNumber]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Day not found' });
+        }
+
+        res.json({ message: 'Notes saved' });
+    } catch (err) {
+        next(err);
+    }
+});
+
+app.post('/api/activities', async (req, res, next) => {
+    const { tripId, dayID, activityName, notes, location, cost, startTime, endTime } = req.body;
+
+    if (!tripId || !dayID || !activityName) {
+        return res.status(400).json({ error: 'tripId, dayID, and activityName are required' });
+    }
+
+    try {
+        const [result] = await pool.query(
+            `INSERT INTO activities (tripId, dayID, activityName, notes, location, cost, startTime, endTime)
+             VALUES (?,?,?,?,?,?,?,?)`,
+            [
+                tripId,
+                dayID,
+                activityName,
+                notes || null,
+                location || null,
+                cost === '' || cost == null ? 0 : cost,
+                startTime || null,
+                endTime || null
+            ]
+        );
+        res.status(201).json({ id: result.insertId, activityName });
+    } catch (err) {
+        next(err);
+    }
+});
+
 app.post('/api/Trips', async (req, res, next) => {
     const { Title, startDate, endDate } = req.body;
 

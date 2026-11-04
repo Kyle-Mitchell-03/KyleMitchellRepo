@@ -167,6 +167,27 @@ async function createTrip() {
     }
 }
 
+async function saveNotes(tripId, dayNumber){
+    const notesInp = document.getElementById("note").value;
+    const errorDiv = document.getElementById("error");
+
+    try {
+        const response = await fetch(`/api/Trips/${tripId}/days/${dayNumber}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ notes: notesInp })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || "Note save failed");
+        }
+        loadTripPage(tripId);
+    } catch (err) {
+        console.error("Failed to save notes:", err);
+        errorDiv.innerHTML = `<header><h2>Failed to save notes</h2></header>`;
+    }
+}
+
 async function pullDay(tripId,dayNumber){
     let day;
     try{
@@ -288,24 +309,85 @@ async function deleteTrip(id) {
 }
 
 async function editDay(tripId,dayNumber){
-    console.log(tripId);
-    console.log(dayNumber);
     const day = await pullDay(tripId,dayNumber);
-    const trip = await fetchTrip(tripId);
     wraps.innerHTML = `
         <div id = "error" class = "error"></div>
         <header>
             <h1> ${day.dayDate} </h1>
         </header>
         <div class = "card">
-                <input type = "param" id = "note" placeholder = "${day.notes}">
+                <input type = "text" id = "note" value = "${day.notes ?? ''}">
         </div>
         <div class = "card" id = "activs"></div>
         <div class="card">
+            <button onclick = "createActivity(${tripId},${dayNumber})">Add Activity</button>
+            <button onclick = "saveNotes(${tripId},${dayNumber})">Save Changes</button>
             <button onclick="home()">Home</button>
         </div>
     `;
 
+}
+
+async function createActivity(tripId,dayNumber){
+    const day = await pullDay(tripId,dayNumber);
+    wraps.innerHTML = `
+        <div id = "error" class = "error"></div>
+        <header>
+            <h1>${day.dayDate}</h1>
+        </header>
+        <div class = "card">
+            <input type = "text" id = "title" value = "">
+            <input type = "text" id = "desc" value = "">
+            <input type = "text" id = "direction" value = "">
+            <input type = "text" id = "cost" value = "">
+            <input type = "time" id = "startTime" value = "">
+            <input type = "time" id = "endTime" value = "">
+        </div>
+        <div>
+            <button onclick = saveActivity(${tripId},${dayNumber})>Create Activity</button>
+        </div>
+    `;
+}
+
+async function saveActivity(tripId, dayNumber){
+    const activTitle = document.getElementById("title").value;
+    const activDesc = document.getElementById("desc").value;
+    const activDir = document.getElementById("direction").value;
+    const activCost = document.getElementById("cost").value;
+    const activST = document.getElementById("startTime").value;
+    const activET = document.getElementById("endTime").value;
+    if (!activTitle || !activDesc || !activDir || !activCost || !activST || !activET) {
+        document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
+        return;
+    }
+    try {
+        const response = await (fetch("/api/activities", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                tripId: tripId,
+                dayID: dayNumber,
+                activityName: activTitle,
+                notes: activDesc,
+                location: activDir,
+                cost: activCost,
+                startTime: activST,
+                endTime: activET
+
+            })
+        }));
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || "Activity Creation Failed");
+        }
+        tripPage();
+    }
+    catch (err) {
+        console.error("Failed to create activity:", err);
+        document.getElementById("error").innerHTML = '<h2>Failed to create Activity</h2>';
+    }
 }
 
 
