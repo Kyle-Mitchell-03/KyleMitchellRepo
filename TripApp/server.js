@@ -77,7 +77,7 @@ app.get('/api/days/:id', async (req, res) => {
 app.get("/api/activities/:id", async (req, res) => {
     try {
         const tripId = Number(req.params.id);
-        const [rows] = await db.query(
+        const [rows] = await pool.query(
             "SELECT * FROM activities WHERE tripId = ? ORDER BY startTime ASC",
             [tripId]
         );
