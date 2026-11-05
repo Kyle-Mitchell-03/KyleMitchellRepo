@@ -205,7 +205,7 @@ async function pullDay(tripId,dayNumber){
 }
 
 async function fetchDays(id){
-    let dayList;
+    let dayList = [];
     try {
         const response = await fetch(`/api/days/${id}`);
         if (!response.ok) {
@@ -239,7 +239,7 @@ async function fetchTrip(id){
 }
 
 async function fetchActivities(id){
-    let activ = "";
+    let activ = [];
     try{
         const response = await fetch(`/api/activities/${id}`);
         if(!response.ok)
@@ -273,6 +273,9 @@ async function loadTripPage(id){
 
     const dayDiv = document.getElementById("days");
     const days = await fetchDays(id);
+    const activities = await fetchActivities(id);
+    console.log(activities[0]);
+    console.log(days[0]);
 
     if(!days || days.length == 0)
     {
@@ -280,14 +283,27 @@ async function loadTripPage(id){
     }
     else
     {
-        dayDiv.innerHTML = days.map(d => `<div class = "card">
-                                            <div class = "headerDiv">
-                                                <h1>${d.dayDate}</h1>
-                                                <button class = "editBtn" onclick = "editDay(${id},${d.dayNumber})">edit</button>
-                                            </div>
-                                            <p>${d.notes}</p>
-                                        </div>
-                                `).join("");
+        dayDiv.innerHTML = days.map(d => {
+            const dayActivities = activities.filter(a=> a.dayID === d.dayNumber);
+            const activitiesHTML = dayActivities.map(a=> `
+                    <div class = "activity">
+                        <h3>${a.activityName}</h3>
+                        <p>${a.cost}</p>
+                        <p>${a.notes}</p>
+                    </div>
+                `).join("");
+
+            return `
+                <div class = "card">
+                    <div class = "headerDiv">
+                        <h1>${d.dayDate}</h1>
+                        <button class = "editBtn" onclick="editDay(${id},${d.dayNumber})">edit</button>
+                    </div>
+                    <p>${d.notes}</p>
+                    <div class = "activeDiv">${activitiesHTML}</div>
+                </div>
+            `;
+        }).join("");
     }
 }
 

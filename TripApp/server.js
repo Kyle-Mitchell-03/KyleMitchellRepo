@@ -74,15 +74,17 @@ app.get('/api/days/:id', async (req, res) => {
     }
 });
 
-app.get(`/api/activities/:id`, async (req, res) => {
-    try{
-        const{id} = req.params;
-        const rows = await pool.query('SELECT * FROM activities WHERE dayID = ?', [id]);
+app.get("/api/activities/:id", async (req, res) => {
+    try {
+        const tripId = Number(req.params.id);
+        const [rows] = await db.query(
+            "SELECT * FROM activities WHERE tripId = ? ORDER BY startTime ASC",
+            [tripId]
+        );
         res.json(rows);
-    }
-    catch(err){
-        console.error(err);
-        res.status(500).json({error: err.message});
+    } catch (err) {
+        console.error("GET /api/activities failed:", err);
+        res.status(500).json({ error: err.message });
     }
 });
 

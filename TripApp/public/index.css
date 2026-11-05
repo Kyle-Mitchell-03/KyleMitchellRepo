@@ -65,6 +65,14 @@
             grid-auto-flow: column;
         }
 
+        .activeDiv {
+            background-color: #f8f8f8;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 5px #00000010;
+        }
+
         .button-card{
             text-align:center;
         }
