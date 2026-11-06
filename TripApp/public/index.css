@@ -159,6 +159,18 @@
             cursor: pointer;
         }
 
+        .linkBtn {
+            width: 40%;
+            padding: 14px;
+            margin-top: 2px;
+            border: none;
+            border-radius: 8px;
+            background-color: #cfec9f;
+            color: rgb(0, 0, 0);
+            font-size: 8px;
+            cursor: pointer;
+        }
+
         /* Bottom navigation */
         nav {
             display: flex;

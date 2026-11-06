@@ -256,6 +256,10 @@ async function fetchActivities(id){
     return activ;
 }
 
+async function loadFoodPage(id){
+
+}
+
 async function loadTripPage(id){
     const trip = await fetchTrip(id);
     wraps.innerHTML = `
@@ -264,6 +268,7 @@ async function loadTripPage(id){
             <h1> ${trip.Title} </h1>
         </header>
         <p> ${trip.destination ?? ""} </p>
+        <button onclick = "loadFoodPage(${id})">Food Near Me</button>
         <div class = "card" id = "days"></div>
         <div class="card">
             <button onclick="home()">Home</button>
@@ -287,8 +292,12 @@ async function loadTripPage(id){
             const dayActivities = activities.filter(a=> a.dayID === d.dayNumber);
             const activitiesHTML = dayActivities.map(a=> `
                     <div class = "activity">
+                    <div class = "headerDiv">
                         <h3>${a.activityName}</h3>
                         <p>${a.cost}</p>
+                        <p>${a.startTime}-${a.endTime}</p>
+                        <button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Dir</button>  
+                    </div>
                         <p>${a.notes}</p>
                     </div>
                 `).join("");
