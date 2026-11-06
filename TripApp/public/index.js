@@ -415,4 +415,20 @@ async function saveActivity(tripId, dayNumber){
     }
 }
 
+function sortByCloseness(myLat, myLng, rests, unit = "mi") {
+  const R = unit === "km" ? 6371.0088 : 3958.7613; // Earth radius
+  const rad = (d) => (d * Math.PI) / 180;
+
+  return rests
+    .map((r) => {
+      const dLat = rad(r.lat - myLat);
+      const dLng = rad(r.lng - myLng);
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(rad(myLat)) * Math.cos(rad(r.lat)) * Math.sin(dLng / 2) ** 2;
+      return { ...r, distance: 2 * R * Math.asin(Math.sqrt(a)) };
+    })
+    .sort((a, b) => a.distance - b.distance); // nearest first
+}
+
 
