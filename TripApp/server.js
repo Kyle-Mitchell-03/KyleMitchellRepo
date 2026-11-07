@@ -104,6 +104,19 @@ app.get(`/api/Trips/:tripId/days/:dayNumber`, async (req,res) => {
     }
 })
 
+app.get(`/api/restaurants/:tripId`, async (req,res) => {
+    try{
+        const {tripId} = req.params;
+        const [rows] = await pool.query(`SELECT * FROM restaurants WHERE tripId = ?`,[tripId]);
+        res.json(rows);
+    }
+    catch(err)
+    {
+        console.error("GET /api/restaurants failed: ",err);
+        res.status(500).json({error: err.message});
+    }
+})
+
 function getDateRange(startDate, endDate) {
     const dates = [];
     const current = new Date(`${startDate}T00:00:00Z`);

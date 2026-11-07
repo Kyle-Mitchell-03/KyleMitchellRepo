@@ -256,6 +256,25 @@ async function fetchActivities(id){
     return activ;
 }
 
+async function fetchRestaurants(id){
+    let rests = [];
+    try{
+        const response = await fetch(`/api/restaurants/${id}`);
+        if(!response.ok)
+        {
+            throw new Error(`Server returned ${response.status}`);
+        }
+        rests = await response.json();
+    }
+    catch(err)
+    {
+        console.log("Failed to load restuarants: ".err);
+        const errorDiv = document.getElementById("error");
+        errorDiv.innerHTML = `<h2>Failed to load activities</h2>`
+    }
+    return rests;
+}
+
 async function loadFoodPage(id){
 
 }

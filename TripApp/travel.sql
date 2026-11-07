@@ -24,6 +24,18 @@ CREATE TABLE days (
     UNIQUE KEY uniqueTripDay (tripID,dayNumber)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE restaurants (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tripID INT NOT NULL,
+    notes TEXT,
+    location VARCHAR(10000),
+    lng INT NOT NULL,
+    lat INT NOT NULL,
+
+    FOREIGN KEY (tripID) REFERENCES Trips(id) ON DELETE CASCADE,
+    UNIQUE KEY uniqueTripDay (tripID,id)
+) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE activities (
     id INT AUTO_INCREMENT PRIMARY KEY,
     tripId INT NOT NULL,
