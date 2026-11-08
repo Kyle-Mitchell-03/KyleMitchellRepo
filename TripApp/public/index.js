@@ -276,6 +276,17 @@ async function fetchRestaurants(id){
 }
 
 async function loadFoodPage(id){
+    const rests = fetchRestaurants(id);
+    wraps.innerHTML = `
+        <div id = "error" class = "error"></div>
+        <header>
+            <h1> Restaurants </h1>
+        </header>
+        <div class = "card" id = "rests"></div>
+        <div class="card">
+            <button onclick="loadTripPage(${id})">Back</button>
+        </div>
+    `;
 
 }
 
