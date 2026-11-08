@@ -282,6 +282,9 @@ async function loadFoodPage(id){
         <header>
             <h1> Restaurants </h1>
         </header>
+        <div class = "card">
+            <button onclick = "createRestaurant(${id})">Add Restaurant</button>
+        </div>
         <div class = "card" id = "rests"></div>
         <div class="card">
             <button onclick="loadTripPage(${id})">Back</button>
@@ -391,12 +394,12 @@ async function createActivity(tripId,dayNumber){
             <h1>${day.dayDate}</h1>
         </header>
         <div class = "card">
-            <input type = "text" id = "title" value = "">
-            <input type = "text" id = "desc" value = "">
-            <input type = "text" id = "direction" value = "">
-            <input type = "text" id = "cost" value = "">
-            <input type = "time" id = "startTime" value = "">
-            <input type = "time" id = "endTime" value = "">
+            <input type = "text" id = "title" value = "title">
+            <input type = "text" id = "desc" value = "desc">
+            <input type = "text" id = "direction" value = "dir">
+            <input type = "text" id = "cost" value = "cost">
+            <input type = "time" id = "startTime" value = "st">
+            <input type = "time" id = "endTime" value = "et">
         </div>
         <div>
             <button onclick = saveActivity(${tripId},${dayNumber})>Create Activity</button>
@@ -442,6 +445,65 @@ async function saveActivity(tripId, dayNumber){
     catch (err) {
         console.error("Failed to create activity:", err);
         document.getElementById("error").innerHTML = '<h2>Failed to create Activity</h2>';
+    }
+}
+
+async function createRestaurant(id){
+    wraps .innerHTML = `
+        <div id = "error" class = "error"></div>
+        <header>
+            <h1>Add Resturant</h1>
+        </header>
+        <div class = "card">
+            <input type = "text" id = "name" value = "name">
+            <input type = "text" id = "desc" value = "desc">
+            <input type = "text" id = "direction" value = "dir">
+            <input type = "text" id = "webpage" value = "wbpg">
+        </div>
+        <div>
+            <button onclick = "saveRestaurant(${id})">Save Restaurant</button>
+        </div>
+    `;
+}
+
+async function saveRestaurant(id){
+    const name = document.getElementById("name");
+    const desc = document.getElementById("desc");
+    const dir = document.getElementById("dir");
+    const wbpg = document.getElementById("webpage");
+    //Put helper function to convert lat lng here, pass on with save Rest
+    //Put helper function to get your lat long here
+    //Call helper, sort by closeness here
+    //const lat = ?, const lng = ?
+    if (!name || !desc || !dir || !wbpg) {
+        document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
+        return;
+    }
+    try {
+        const response = await (fetch("/api/restaurants", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                tripId: id,
+                restName: name,
+                notes: desc,
+                location: dir,
+                webpage: wbpg
+                //lng: lng,
+                //lat: lat
+            })
+        }));
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || "Restaurant Creation Failed");
+        }
+        tripPage();
+    }
+    catch (err) {
+        console.error("Failed to create restaurant:", err);
+        document.getElementById("error").innerHTML = '<h2>Failed to create Restaurant</h2>';
     }
 }
 

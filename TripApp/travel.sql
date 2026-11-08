@@ -26,6 +26,7 @@ CREATE TABLE days (
 
 CREATE TABLE restaurants (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    restName VARCHAR(250),
     tripID INT NOT NULL,
     notes TEXT,
     location VARCHAR(10000),
