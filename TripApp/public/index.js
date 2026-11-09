@@ -74,17 +74,20 @@ async function tripPage() {
 
 async function home() {
     wraps.innerHTML = `
-    <main>
+    <header>
+            <h1>TripApp</h1>
+        </header>
+        <main>
             <div class = "card">
                 <button onclick = "tripPage()">
-                    View Trip
+                    View Trips
                 </button>
             </div>
-            <div class = "card">
+            <div class = "dashboard">
                 <h2>Another Section</h2>
                 <p>add another option here</p>
             </div>
-    </main>
+        </main>
     `;
 }
 
