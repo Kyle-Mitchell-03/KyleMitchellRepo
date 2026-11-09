@@ -251,7 +251,7 @@ async function fetchActivities(id){
         activ = await response.json();
     }
     catch(err){
-        console.log("Failed to load Activities: ".err);
+        console.log("Failed to load Activities: ", err);
         const errorDiv = document.getElementById("error");
         errorDiv.innerHTML = `<h2>Failed to load activities</h2>`
     }
@@ -270,7 +270,7 @@ async function fetchRestaurants(id){
     }
     catch(err)
     {
-        console.log("Failed to load restuarants: ".err);
+        console.log("Failed to load restuarants: ", err);
         const errorDiv = document.getElementById("error");
         errorDiv.innerHTML = `<h2>Failed to load activities</h2>`
     }
@@ -333,6 +333,52 @@ async function loadFoodPage(id) {
     }
 }
 
+async function activityRestMap(id) {
+    wraps.innerHTML = `
+        <div id="map"></div>
+        <button class="mapBack" onclick="loadTripPage(${id})">Back</button>
+        <div id="error" class="error mapError"></div>
+        `;
+
+    const map = L.map('map', { zoomControl: false }).setView([34.05, -118.25], 10);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    const [activities,restaurants] = await Promise.all([fetchActivities(id),fetchRestaurants(id)]);
+
+    const markers = [];
+    
+    activities
+    .filter(a => a.lat != null && a.lng != null)
+    .forEach(a => {
+        markers.push(
+            L.marker([a.lat, a.lng])
+                .addTo(map)
+                .bindPopup(`<b>${a.activityName}</b><br>${a.notes ?? ""}</br><button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Dir</button>`)
+        );
+    });
+
+    restaurants
+    .filter(r => r.lat != null && r.lng != null)
+    .forEach(r => {
+        markers.push(
+            L.circleMarker([r.lat, r.lng], {color: "red"})
+                .addTo(map)
+                .bindPopup(`<b>${r.restName}</b><br>${r.notes ?? ""}</br><button onclick = "window.location.href ='${r.location}'" class = "linkBtn">Dir</button>`)
+        );
+    });
+
+    if(markers.length){
+        map.fitBounds(L.featureGroup(markers).getBounds().pad(0.2));
+    }
+    else{
+        document.getElementById("error").innerHTML = "<h2>No locations with coordinates yet!</h2>"
+    }
+}
+
 async function loadTripPage(id){
     const trip = await fetchTrip(id);
     wraps.innerHTML = `
@@ -346,6 +392,9 @@ async function loadTripPage(id){
         </div>
         <div class = "card">
             <button onclick = "loadFoodPage(${id})">Food Near Me</button>
+        </div>
+        <div class = "card">
+            <button onclick = "activityRestMap(${id})">Activity Map</button>
         </div>
         <div class = "card" id = "days"></div>
     `;
@@ -400,7 +449,6 @@ async function deleteTrip(id) {
         if (!response.ok) {
             throw new Error(`Delete Failed: ${response.status}`)
         }
-        loadTrips();
     }
     catch (err) {
         console.error("Failed to delete Trip:", err);
@@ -476,7 +524,8 @@ async function saveEditActivity(tripId, dayNumber, activityId){
     const activCost = document.getElementById("cost").value;
     const activST = document.getElementById("startTime").value;
     const activET = document.getElementById("endTime").value;
-    if (!activTitle || !activDesc || !activDir || !activCost || !activST || !activET) {
+    const {lat, lng} = await coordsFromLink(activDir);
+    if (!activTitle || !activDesc || !activDir || !activCost || !activST || !activET || !lat || !lng) {
         document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
         return;
     }
@@ -494,7 +543,9 @@ async function saveEditActivity(tripId, dayNumber, activityId){
                 location: activDir,
                 cost: activCost,
                 startTime: activST,
-                endTime: activET
+                endTime: activET,
+                lat: lat,
+                lng: lng
 
             })
         }));
@@ -559,7 +610,8 @@ async function saveActivity(tripId, dayNumber){
     const activCost = document.getElementById("cost").value;
     const activST = document.getElementById("startTime").value;
     const activET = document.getElementById("endTime").value;
-    if (!activTitle || !activDesc || !activDir || !activCost || !activST || !activET) {
+    const {lat,lng} = await coordsFromLink(activDir);
+    if (!activTitle || !activDesc || !activDir || !activCost || !activST || !activET || !lat || !lng) {
         document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
         return;
     }
@@ -577,7 +629,9 @@ async function saveActivity(tripId, dayNumber){
                 location: activDir,
                 cost: activCost,
                 startTime: activST,
-                endTime: activET
+                endTime: activET,
+                lat: lat,
+                lng: lng
 
             })
         }));

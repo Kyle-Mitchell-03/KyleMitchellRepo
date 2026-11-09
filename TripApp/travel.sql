@@ -47,6 +47,8 @@ CREATE TABLE activities (
     cost TEXT,
     notes TEXT,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    lat DOUBLE,
+    lng DOUBLE,
 
     FOREIGN KEY (dayID) REFERENCES days(id) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

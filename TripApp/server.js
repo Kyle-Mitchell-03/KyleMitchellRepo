@@ -193,7 +193,7 @@ app.put('/api/Trips/:tripId/days/:dayNumber', async (req, res, next) => {
 
 app.put('/api/activities/:activityId', async (req, res, next) => {
     const { activityId } = req.params;
-    const { activityName, notes, location, cost, startTime, endTime } = req.body;
+    const { activityName, notes, location, cost, startTime, endTime, lat, lng} = req.body;
 
     if (!activityName) {
         return res.status(400).json({ error: 'activityName is required' });
@@ -202,7 +202,7 @@ app.put('/api/activities/:activityId', async (req, res, next) => {
     try {
         const [result] = await pool.query(
             `UPDATE activities
-             SET activityName = ?, notes = ?, location = ?, cost = ?, startTime = ?, endTime = ?
+             SET activityName = ?, notes = ?, location = ?, cost = ?, startTime = ?, endTime = ?, lat = ?, lng = ?
              WHERE id = ?`,
             [
                 activityName,
@@ -211,6 +211,8 @@ app.put('/api/activities/:activityId', async (req, res, next) => {
                 cost === '' || cost == null ? 0 : cost,
                 startTime || null,
                 endTime || null,
+                lat,
+                lng,
                 activityId
             ]
         );
@@ -244,7 +246,7 @@ app.post(`/api/restaurants`, async(req,res,next) => {
 });
 
 app.post('/api/activities', async (req, res, next) => {
-    const { tripId, dayID, activityName, notes, location, cost, startTime, endTime } = req.body;
+    const { tripId, dayID, activityName, notes, location, cost, startTime, endTime, lat, lng } = req.body;
 
     if (!tripId || !dayID || !activityName) {
         return res.status(400).json({ error: 'tripId, dayID, and activityName are required' });
@@ -252,8 +254,8 @@ app.post('/api/activities', async (req, res, next) => {
 
     try {
         const [result] = await pool.query(
-            `INSERT INTO activities (tripId, dayID, activityName, notes, location, cost, startTime, endTime)
-             VALUES (?,?,?,?,?,?,?,?)`,
+            `INSERT INTO activities (tripId, dayID, activityName, notes, location, cost, startTime, endTime, lat, lng)
+             VALUES (?,?,?,?,?,?,?,?,?,?)`,
             [
                 tripId,
                 dayID,
@@ -262,7 +264,9 @@ app.post('/api/activities', async (req, res, next) => {
                 location || null,
                 cost === '' || cost == null ? 0 : cost,
                 startTime || null,
-                endTime || null
+                endTime || null,
+                lat,
+                lng
             ]
         );
         res.status(201).json({ id: result.insertId, activityName });
