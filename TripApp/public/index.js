@@ -196,7 +196,6 @@ async function pullDay(tripId,dayNumber){
             throw new Error(`Server returned ${response.status}`);
         }
         day = await response.json();
-        console.log(day);
     }
     catch(err){
         console.log("Failed to load single day: ",err);
@@ -275,10 +274,29 @@ async function fetchRestaurants(id){
     return rests;
 }
 
-async function loadFoodPage(id){
-    const rests = fetchRestaurants(id);
-    wraps.innerHTML = `
-        <div id = "error" class = "error"></div>
+async function getCurrentLocation() {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject(new Error("Geolocation is not supported by this browser"));
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (position) => resolve({
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            }),
+            (err) => reject(err),
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000
+            }
+        );
+    });
+}
+
+async function loadFoodPage(id) {
+    wraps.innerHTML = `<div id = "error" class = "error"></div>
         <header>
             <h1> Restaurants </h1>
         </header>
@@ -288,9 +306,28 @@ async function loadFoodPage(id){
         <div class = "card" id = "rests"></div>
         <div class="card">
             <button onclick="loadTripPage(${id})">Back</button>
-        </div>
-    `;
+        </div>`;
 
+    const errorDiv = document.getElementById("error");
+    try {
+        const rests = await fetchRestaurants(id);
+        const me = await getCurrentLocation();
+        const sorted = sortByCloseness(me.lat, me.lng, rests);
+
+        document.getElementById("rests").innerHTML = sorted.map(r => `
+            <div class="card">
+                <h3>${r.restName}</h3>
+                <p>${r.distance.toFixed(1)} mi away</p>
+                <p>${r.notes ?? ""}</p>
+            </div>
+        `).join("");
+    } catch (err) {
+        if (err.code === 1) {
+            errorDiv.innerHTML = "<h2>Location permission denied</h2>";
+        } else {
+            errorDiv.innerHTML = "<h2>Could not get your location</h2>";
+        }
+    }
 }
 
 async function loadTripPage(id){
@@ -301,11 +338,13 @@ async function loadTripPage(id){
             <h1> ${trip.Title} </h1>
         </header>
         <p> ${trip.destination ?? ""} </p>
-        <button onclick = "loadFoodPage(${id})">Food Near Me</button>
-        <div class = "card" id = "days"></div>
         <div class="card">
             <button onclick="home()">Home</button>
         </div>
+        <div class = "card">
+            <button onclick = "loadFoodPage(${id})">Food Near Me</button>
+        </div>
+        <div class = "card" id = "days"></div>
     `;
     
 
@@ -329,9 +368,9 @@ async function loadTripPage(id){
                         <h3>${a.activityName}</h3>
                         <p>${a.cost}</p>
                         <p>${a.startTime}-${a.endTime}</p>
-                        <button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Dir</button>  
+                        <button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Dir</button> 
+                        <p>${a.notes}</p> 
                     </div>
-                        <p>${a.notes}</p>
                     </div>
                 `).join("");
 
@@ -341,7 +380,7 @@ async function loadTripPage(id){
                         <h1>${d.dayDate}</h1>
                         <button class = "editBtn" onclick="editDay(${id},${d.dayNumber})">edit</button>
                     </div>
-                    <p>${d.notes}</p>
+                    <p>${d.notes || "Add a description!"}</p>
                     <div class = "activeDiv">${activitiesHTML}</div>
                 </div>
             `;
@@ -373,21 +412,124 @@ async function editDay(tripId,dayNumber){
         <header>
             <h1> ${day.dayDate} </h1>
         </header>
-        <div class = "card">
-                <input type = "text" id = "note" value = "${day.notes ?? ''}">
-        </div>
-        <div class = "card" id = "activs"></div>
         <div class="card">
             <button onclick = "createActivity(${tripId},${dayNumber})">Add Activity</button>
             <button onclick = "saveNotes(${tripId},${dayNumber})">Save Changes</button>
             <button onclick="home()">Home</button>
         </div>
+        <div class = "card">
+                <input type = "text" id = "note" value = "${day.notes ?? ''}">
+        </div>
+        <div class = "card" id = "activs"></div>
     `;
+    const activities = await fetchActivities(tripId);
+    const dayActivities = activities.filter(a=> a.dayID === dayNumber);
+            const activitiesHTML = dayActivities.map(a=> `
+                    <div class = "activity">
+                    <div class = "headerDiv">
+                        <h3>${a.activityName}</h3>
+                        <p>${a.cost}</p>
+                        <p>${a.startTime}-${a.endTime}</p>
+                        <button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Dir</button> 
+                        <p>${a.notes}</p> 
+                        <button onclick = "editActivity(${tripId},${dayNumber},${a.id})">Edit Activity</button>
+                    </div>
+                    </div>
+                `).join("");
 
+    document.getElementById("activs").innerHTML = `${activitiesHTML}`;
+    
+}
+
+async function editActivity(tripId, dayNumber, activityId){
+    const activs = await fetchActivities(tripId);
+    const day = await pullDay(tripId,dayNumber);
+    const a = activs.find(a=> a.id === activityId && a.dayID === dayNumber);
+    console.log(a);
+    wraps.innerHTML = `
+        <div id = "error" class = "error"></div>
+        <header>
+            <h1>${a.activityName}</h1>
+        </header>
+        <div class = "card">
+            <input type = "text" id = "title" value = "${a?.activityName}">
+            <input type = "text" id = "desc" value = "${a?.notes}">
+            <input type = "text" id = "direction" value = "${a?.location}">
+            <input type = "text" id = "cost" value = "${a?.cost}">
+            <input type = "time" id = "startTime" value = "${a?.startTime || ""}">
+            <input type = "time" id = "endTime" value = "${a?.endTime || ""}">
+        </div>
+        <div>
+            <button onclick = "saveEditActivity(${tripId},${dayNumber},${activityId})">Save Changes</button>
+            <button onclick = "deleteActivity(${tripId},${dayNumber},${activityId})">Delete</button>
+        </div>
+    `;
+}
+
+async function saveEditActivity(tripId, dayNumber, activityId){
+    const activTitle = document.getElementById("title").value;
+    const activDesc = document.getElementById("desc").value;
+    const activDir = document.getElementById("direction").value;
+    const activCost = document.getElementById("cost").value;
+    const activST = document.getElementById("startTime").value;
+    const activET = document.getElementById("endTime").value;
+    if (!activTitle || !activDesc || !activDir || !activCost || !activST || !activET) {
+        document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
+        return;
+    }
+    try {
+        const response = await (fetch(`/api/activities/${activityId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                tripId: tripId,
+                dayID: dayNumber,
+                activityName: activTitle,
+                notes: activDesc,
+                location: activDir,
+                cost: activCost,
+                startTime: activST,
+                endTime: activET
+
+            })
+        }));
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || "Activity Save Failed");
+        }
+        tripPage();
+    }
+    catch (err) {
+        console.error("Failed to save activity:", err);
+        document.getElementById("error").innerHTML = '<h2>Failed to save Activity</h2>';
+    }
+
+}
+
+async function deleteActivity(tripId, dayNumber, activityId){
+    if (!confirm("Delete this activity?")) return;
+
+    try {
+        const response = await fetch(`/api/activities/${activityId}`, {
+            method: "DELETE"
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || "Activity delete failed");
+        }
+        editDay(tripId, dayNumber);
+    } catch (err) {
+        console.error("Failed to delete activity:", err);
+        document.getElementById("error").innerHTML = '<h2>Failed to delete Activity</h2>';
+    }
 }
 
 async function createActivity(tripId,dayNumber){
     const day = await pullDay(tripId,dayNumber);
+    const activs = await fetchActivities(tripId);
+    const a = activs.filter(a=> a.dayID === dayNumber);
     wraps.innerHTML = `
         <div id = "error" class = "error"></div>
         <header>
@@ -466,20 +608,28 @@ async function createRestaurant(id){
     `;
 }
 
+async function coordsFromLink(link) {
+    const r = await fetch(`/api/resolve-link?url=${encodeURIComponent(link)}`);
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error);
+    return data;   // { lat, lng }
+}
+
 async function saveRestaurant(id){
-    const name = document.getElementById("name");
-    const desc = document.getElementById("desc");
-    const dir = document.getElementById("dir");
-    const wbpg = document.getElementById("webpage");
+    const name = document.getElementById("name").value;
+    const desc = document.getElementById("desc").value;
+    const dir = document.getElementById("direction").value;
+    const wbpg = document.getElementById("webpage").value;
     //Put helper function to convert lat lng here, pass on with save Rest
     //Put helper function to get your lat long here
     //Call helper, sort by closeness here
     //const lat = ?, const lng = ?
-    if (!name || !desc || !dir || !wbpg) {
-        document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
+    if (!name || !dir ) {
+        document.getElementById("error").innerHTML = '<h2>Please fill in name and address</h2>';
         return;
     }
     try {
+        const {lat,lng} = await coordsFromLink(dir);
         const response = await (fetch("/api/restaurants", {
             method: "POST",
             headers: {
@@ -490,9 +640,9 @@ async function saveRestaurant(id){
                 restName: name,
                 notes: desc,
                 location: dir,
-                webpage: wbpg
-                //lng: lng,
-                //lat: lat
+                webpage: wbpg,
+                lat,
+                lng
             })
         }));
         const result = await response.json();

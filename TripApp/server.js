@@ -39,9 +39,49 @@ function makeListHandler(table) {
     };
 }
 
+function parseGoogleMapsLink(url) {
+    // 1. exact place pin: !3d<lat>!4d<lng>
+    let m = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+    if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+
+    // 2. query params: destination=lat,lng (also query, q, ll)
+    try {
+        const u = new URL(url);
+        for (const key of ["destination", "query", "q", "ll"]) {
+            const v = u.searchParams.get(key);
+            const c = v && v.match(/^\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*$/);
+            if (c) return { lat: parseFloat(c[1]), lng: parseFloat(c[2]) };
+        }
+    } catch { /* not a valid URL */ }
+
+    // 3. fallback: map center @lat,lng
+    m = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+
+    return null;
+}
+
 app.get('/api/Trips', makeListHandler('Trips'));
 app.get('/api/days', makeListHandler('days'));
 app.get('/api/activities', makeListHandler('activities'));
+
+app.get('/api/resolve-link', async (req, res) => {
+    try {
+        let { url } = req.query;
+        const u = new URL(url);
+        if (["maps.app.goo.gl", "goo.gl"].includes(u.hostname)) {
+            const response = await fetch(url, { redirect: "follow" });
+            url = response.url;
+        }
+        const coords = parseGoogleMapsLink(url);
+        if (!coords) {
+            return res.status(422).json({ error: "No coordinates found in that link" });
+        }
+        res.json(coords);
+    } catch (err) {
+        res.status(500).json({ error: "Could not resolve link" });
+    }
+});
 
 app.get('/api/Trips/:id', async (req, res) => {
     try {
@@ -88,32 +128,30 @@ app.get("/api/activities/:id", async (req, res) => {
     }
 });
 
-app.get(`/api/Trips/:tripId/days/:dayNumber`, async (req,res) => {
-    try{
-        const {tripId,dayNumber} = req.params;
-        const[rows] = await pool.query(`SELECT * FROM days WHERE tripId = ? AND dayNumber = ?`, [tripId,dayNumber]);
-        if(rows.length === 0) {
-            return res.status(404).json({error: 'Day not found'});
+app.get(`/api/Trips/:tripId/days/:dayNumber`, async (req, res) => {
+    try {
+        const { tripId, dayNumber } = req.params;
+        const [rows] = await pool.query(`SELECT * FROM days WHERE tripId = ? AND dayNumber = ?`, [tripId, dayNumber]);
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Day not found' });
         }
         res.json(rows[0]);
     }
-    catch(err)
-    {
+    catch (err) {
         console.log(err);
-        res.status(500).json({error: err.message });
+        res.status(500).json({ error: err.message });
     }
 })
 
-app.get(`/api/restaurants/:tripId`, async (req,res) => {
-    try{
-        const {tripId} = req.params;
-        const [rows] = await pool.query(`SELECT * FROM restaurants WHERE tripId = ?`,[tripId]);
+app.get(`/api/restaurants/:tripId`, async (req, res) => {
+    try {
+        const { tripId } = req.params;
+        const [rows] = await pool.query(`SELECT * FROM restaurants WHERE tripId = ?`, [tripId]);
         res.json(rows);
     }
-    catch(err)
-    {
-        console.error("GET /api/restaurants failed: ",err);
-        res.status(500).json({error: err.message});
+    catch (err) {
+        console.error("GET /api/restaurants failed: ", err);
+        res.status(500).json({ error: err.message });
     }
 })
 
@@ -148,6 +186,58 @@ app.put('/api/Trips/:tripId/days/:dayNumber', async (req, res, next) => {
         }
 
         res.json({ message: 'Notes saved' });
+    } catch (err) {
+        next(err);
+    }
+});
+
+app.put('/api/activities/:activityId', async (req, res, next) => {
+    const { activityId } = req.params;
+    const { activityName, notes, location, cost, startTime, endTime } = req.body;
+
+    if (!activityName) {
+        return res.status(400).json({ error: 'activityName is required' });
+    }
+
+    try {
+        const [result] = await pool.query(
+            `UPDATE activities
+             SET activityName = ?, notes = ?, location = ?, cost = ?, startTime = ?, endTime = ?
+             WHERE id = ?`,
+            [
+                activityName,
+                notes || null,
+                location || null,
+                cost === '' || cost == null ? 0 : cost,
+                startTime || null,
+                endTime || null,
+                activityId
+            ]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Activity not found' });
+        }
+        res.json({ success: true });
+    } catch (err) {
+        next(err);
+    }
+});
+
+app.post(`/api/restaurants`, async(req,res,next) => {
+    const {tripId, restName, notes, location, webpage, lat, lng} = req.body;
+
+    if(!tripId || !restName || !location)
+    {
+        return res.status(400).json({ error: 'tripId, restName, and location are required'});
+    }
+
+    try{
+        const[result] = await pool.query(
+            `INSERT INTO restaurants (tripId, restName, notes, location, webpage, lat, lng) VALUES (?,?,?,?,?,?,?)`, 
+                [tripId,restName,notes,location, webpage,lat,lng]
+        );
+        res.status(201).json({ id: result.insertId, restName });
     } catch (err) {
         next(err);
     }
@@ -232,6 +322,21 @@ app.delete('/api/Trips/:id', async (req, res, next) => {
         next(err);
     }
 })
+
+app.delete('/api/activities/:activityId', async (req, res, next) => {
+    try {
+        const { activityId } = req.params;
+        const [result] = await pool.query('DELETE FROM activities WHERE id = ?', [activityId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Activity not found' });
+        }
+
+        res.json({ message: 'Activity deleted', id: activityId });
+    } catch (err) {
+        next(err);
+    }
+});
 
 // ---------- 404 for unmatched /api routes ----------
 app.use('/api', (req, res) => {

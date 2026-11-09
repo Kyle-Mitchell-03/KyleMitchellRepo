@@ -26,16 +26,15 @@ CREATE TABLE days (
 
 CREATE TABLE restaurants (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    restName VARCHAR(250),
-    tripID INT NOT NULL,
+    tripId INT NOT NULL,
+    restName VARCHAR(255) NOT NULL,
     notes TEXT,
-    location VARCHAR(10000),
-    lng INT NOT NULL,
-    lat INT NOT NULL,
-
-    FOREIGN KEY (tripID) REFERENCES Trips(id) ON DELETE CASCADE,
-    UNIQUE KEY uniqueTripDay (tripID,id)
-) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    location VARCHAR(1000) NOT NULL,
+    webpage VARCHAR(1000),
+    lat DOUBLE,
+    lng DOUBLE,
+    FOREIGN KEY (tripId) REFERENCES Trips(id) ON DELETE CASCADE
+);
 
 CREATE TABLE activities (
     id INT AUTO_INCREMENT PRIMARY KEY,
