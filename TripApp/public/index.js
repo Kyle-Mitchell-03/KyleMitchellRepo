@@ -420,15 +420,15 @@ async function loadTripPage(id){
                         <h3>${a.activityName}</h3>
                         <p>${a.cost}</p>
                         <p>${a.startTime}-${a.endTime}</p>
-                        <button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Dir</button> 
                         <p>${a.notes}</p> 
+                        <button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Dir</button> 
                     </div>
                     </div>
                 `).join("");
 
             return `
                 <div class = "card">
-                    <div class = "headerDiv">
+                    <div class = "dayHeaderDiv">
                         <h1>${d.dayDate}</h1>
                         <button class = "editBtn" onclick="editDay(${id},${d.dayNumber})">edit</button>
                     </div>
@@ -466,7 +466,7 @@ async function editDay(tripId,dayNumber){
         <div class="card">
             <button onclick = "createActivity(${tripId},${dayNumber})">Add Activity</button>
             <button onclick = "saveNotes(${tripId},${dayNumber})">Save Changes</button>
-            <button onclick="home()">Home</button>
+            <button onclick="loadTripPage(${tripId})">Back</button>
         </div>
         <div class = "card">
                 <input type = "text" id = "note" value = "${day.notes ?? ''}">
@@ -553,7 +553,7 @@ async function saveEditActivity(tripId, dayNumber, activityId){
         if (!response.ok) {
             throw new Error(result.error || "Activity Save Failed");
         }
-        tripPage();
+        loadTripPage(tripId);
     }
     catch (err) {
         console.error("Failed to save activity:", err);
