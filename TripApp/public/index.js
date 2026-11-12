@@ -1,39 +1,8 @@
-/*
-    SQL EXAMPLES
-    -----------------------------------------------------
-    -- Step 1: Add the base Trip (Generates ID: 1)
-        INSERT INTO trips (title, destination, start_date, end_date) 
-        VALUES ('Tokyo Adventure', 'Tokyo, Japan', '2027-07-15', '2027-07-16');
-
-    -- Step 2: Add Day 1 to that Trip (Generates ID: 1)
-        INSERT INTO trip_days (trip_id, day_number, day_date, notes) 
-        VALUES (1, 1, '2027-07-15', 'Arrival and exploration day.');
-
-    -- Step 3: Add sequential activities tied to Day 1 (day_id = 1)
-        INSERT INTO activities (day_id, activity_name, location, start_time, end_time, cost, confirmation_number) VALUES 
-            (1, 'Check-in Hotel Gracery', 'Shinjuku', '15:00:00', '15:30:00', 0.00, 'BK-993821'),
-            (1, 'Sushi Dinner', 'Sukiyabashi Jiro', '18:30:00', '20:30:00', 30000.00, 'RES-JIRO55'),
-            (1, 'Observation Deck View', 'Tokyo Metropolitan Gov Building', '21:00:00', '22:00:00', 0.00, NULL);
-
-    -- Step 4: Extract the ultimate complete chronological itinerary
-        SELECT 
-            t.title AS trip_name,
-            d.day_number,
-            d.day_date,
-            a.start_time,
-            a.activity_name,
-            a.location,
-            a.cost
-        FROM trips t
-        JOIN trip_days d ON t.id = d.trip_id
-        JOIN activities a ON d.id = a.day_id
-        WHERE t.id = 1
-        ORDER BY d.day_number ASC, a.start_time ASC;
-*/
 const wraps = document.getElementById("wrapper");
 const errors = document.getElementById("error");
 const tripDiv = document.getElementById("trips");
 let tripList = [];
+
 
 
 async function tripPage() {
@@ -357,7 +326,7 @@ async function activityRestMap(id) {
         markers.push(
             L.marker([a.lat, a.lng])
                 .addTo(map)
-                .bindPopup(`<b>${a.activityName}</b><br>${a.notes ?? ""}</br><button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Dir</button>`)
+                .bindPopup(`<b>${a.activityName}</b><br>${a.notes ?? ""}</br><button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Directions</button>`)
         );
     });
 
@@ -367,7 +336,7 @@ async function activityRestMap(id) {
         markers.push(
             L.circleMarker([r.lat, r.lng], {color: "red"})
                 .addTo(map)
-                .bindPopup(`<b>${r.restName}</b><br>${r.notes ?? ""}</br><button onclick = "window.location.href ='${r.location}'" class = "linkBtn">Dir</button>`)
+                .bindPopup(`<b>${r.restName}</b><br>${r.notes ?? ""}</br><button onclick = "window.location.href ='${r.location}'" class = "linkBtn">Direction</button>`)
         );
     });
 
@@ -403,8 +372,8 @@ async function loadTripPage(id){
     const dayDiv = document.getElementById("days");
     const days = await fetchDays(id);
     const activities = await fetchActivities(id);
-    console.log(activities[0]);
-    console.log(days[0]);
+    currentTrip = id;
+    currentActivities = activities;
 
     if(!days || days.length == 0)
     {
@@ -415,19 +384,20 @@ async function loadTripPage(id){
         dayDiv.innerHTML = days.map(d => {
             const dayActivities = activities.filter(a=> a.dayID === d.dayNumber);
             const activitiesHTML = dayActivities.map(a=> `
-                    <div class = "activity">
+                    <div class = "activity" data-id="${a.id}">
                     <div class = "headerDiv">
+                    <span class = "dragHandle">⠿</span>
                         <h3>${a.activityName}</h3>
                         <p>${a.cost}</p>
-                        <p>${a.startTime}-${a.endTime}</p>
+                        <p>${formatTimeString(a.startTime)} - ${formatTimeString(a.endTime)}</p>
                         <p>${a.notes}</p> 
-                        <button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Dir</button> 
+                        <button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Directions</button> 
                     </div>
                     </div>
                 `).join("");
 
             return `
-                <div class = "card">
+                <div class = "dayDiv" data-day = "${d.dayNumber}">
                     <div class = "dayHeaderDiv">
                         <h1>${d.dayDate}</h1>
                         <button class = "editBtn" onclick="editDay(${id},${d.dayNumber})">edit</button>
@@ -469,7 +439,7 @@ async function editDay(tripId,dayNumber){
             <button onclick="loadTripPage(${tripId})">Back</button>
         </div>
         <div class = "card">
-                <input type = "text" id = "note" value = "${day.notes ?? ''}">
+                <input type = "param" id = "note" placeholder = "${day.notes ?? ''}">
         </div>
         <div class = "card" id = "activs"></div>
     `;
@@ -481,7 +451,7 @@ async function editDay(tripId,dayNumber){
                         <h3>${a.activityName}</h3>
                         <p>${a.cost}</p>
                         <p>${a.startTime}-${a.endTime}</p>
-                        <button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Dir</button> 
+                        <button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Directions</button> 
                         <p>${a.notes}</p> 
                         <button onclick = "editActivity(${tripId},${dayNumber},${a.id})">Edit Activity</button>
                     </div>
@@ -503,16 +473,16 @@ async function editActivity(tripId, dayNumber, activityId){
             <h1>${a.activityName}</h1>
         </header>
         <div class = "card">
-            <input type = "text" id = "title" value = "${a?.activityName}">
-            <input type = "text" id = "desc" value = "${a?.notes}">
-            <input type = "text" id = "direction" value = "${a?.location}">
-            <input type = "text" id = "cost" value = "${a?.cost}">
-            <input type = "time" id = "startTime" value = "${a?.startTime || ""}">
-            <input type = "time" id = "endTime" value = "${a?.endTime || ""}">
+            <input type = "param" id = "title" placeholder = "${a?.activityName}">
+            <input type = "param" id = "desc" placeholder = "${a?.notes}">
+            <input type = "param" id = "direction" placeholder = "${a?.location}">
+            <input type = "param" id = "cost" placeholder = "${a?.cost}">
+            <input type = "time" id = "startTime" placeholder = "${a?.startTime || ""}">
+            <input type = "time" id = "endTime" placeholder = "${a?.endTime || ""}">
         </div>
         <div>
             <button onclick = "saveEditActivity(${tripId},${dayNumber},${activityId})">Save Changes</button>
-            <button onclick = "deleteActivity(${tripId},${dayNumber},${activityId})">Delete</button>
+            <button class = "delete" onclick = "deleteActivity(${tripId},${dayNumber},${activityId})">Delete</button>
         </div>
     `;
 }
@@ -590,12 +560,12 @@ async function createActivity(tripId,dayNumber){
             <h1>${day.dayDate}</h1>
         </header>
         <div class = "card">
-            <input type = "text" id = "title" value = "title">
-            <input type = "text" id = "desc" value = "desc">
-            <input type = "text" id = "direction" value = "dir">
-            <input type = "text" id = "cost" value = "cost">
-            <input type = "time" id = "startTime" value = "st">
-            <input type = "time" id = "endTime" value = "et">
+            <input type = "param" id = "title" placeholder = "title">
+            <input type = "param" id = "desc" placeholder = "desc">
+            <input type = "param" id = "direction" placeholder = "dir">
+            <input type = "param" id = "cost" placeholder = "cost">
+            <input type = "time" id = "startTime" placeholder = "st">
+            <input type = "time" id = "endTime" placeholder = "et">
         </div>
         <div>
             <button onclick = saveActivity(${tripId},${dayNumber})>Create Activity</button>
@@ -654,10 +624,10 @@ async function createRestaurant(id){
             <h1>Add Resturant</h1>
         </header>
         <div class = "card">
-            <input type = "text" id = "name" value = "name">
-            <input type = "text" id = "desc" value = "desc">
-            <input type = "text" id = "direction" value = "dir">
-            <input type = "text" id = "webpage" value = "wbpg">
+            <input type = "param" id = "name" placeholder = "name">
+            <input type = "param" id = "desc" placeholder = "desc">
+            <input type = "param" id = "direction" placeholder = "dir">
+            <input type = "param" id = "webpage" placeholder = "wbpg">
         </div>
         <div>
             <button onclick = "saveRestaurant(${id})">Save Restaurant</button>
@@ -730,4 +700,92 @@ function sortByCloseness(myLat, myLng, rests, unit = "mi") {
     .sort((a, b) => a.distance - b.distance); // nearest first
 }
 
+function formatTimeString(timeString) {
+  let [hours, minutes] = timeString.split(':');
+  hours = parseInt(hours, 10);
+  const period = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12 || 12; 
+  return `${hours}:${minutes} ${period}`;
+}
 
+let currentTripId = null;
+let currentActivities = [];
+let drag = null;
+
+function zoneAt(x, y) {
+    return document.elementsFromPoint(x, y).find(n => n.classList.contains('dayDiv')) ?? null;
+}
+
+wraps.addEventListener('pointerdown', (e) => {
+    const handle = e.target.closest('.dragHandle');
+    if (!handle) return;
+    const el = handle.closest('.activity');
+    drag = { el, startX: e.clientX, startY: e.clientY, zone: null };
+    handle.setPointerCapture(e.pointerId);
+    el.classList.add('dragging');
+});
+
+wraps.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    drag.el.style.transform = `translate(${e.clientX - drag.startX}px, ${e.clientY - drag.startY}px)`;
+
+    const zone = zoneAt(e.clientX, e.clientY);
+    if (zone !== drag.zone) {
+        drag.zone?.classList.remove('over');
+        zone?.classList.add('over');
+        drag.zone = zone;
+    }
+});
+
+wraps.addEventListener('pointerup', async () => {
+    if (!drag) return;
+    const { el, zone } = drag;
+    drag = null;
+
+    el.classList.remove('dragging');
+    el.style.transform = '';
+    zone?.classList.remove('over');
+    if (!zone) return;
+
+    const newDay = Number(zone.dataset.day);
+    const oldDay = Number(el.closest('.dayDiv').dataset.day);
+    if (newDay === oldDay) return;
+
+    zone.querySelector('.activeDiv').appendChild(el);
+    await moveActivity(Number(el.dataset.id), newDay);
+});
+
+wraps.addEventListener('pointercancel', () => {
+    if (!drag) return;
+    drag.el.classList.remove('dragging');
+    drag.el.style.transform = '';
+    drag.zone?.classList.remove('over');
+    drag = null;
+});
+
+async function moveActivity(activityId, newDay) {
+    const a = currentActivities.find(x => x.id === activityId);
+    try {
+        const response = await fetch(`/api/activities/${activityId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                tripId: currentTripId,
+                dayID: newDay,
+                activityName: a.activityName,
+                notes: a.notes,
+                location: a.location,
+                cost: a.cost,
+                startTime: a.startTime,
+                endTime: a.endTime,
+                lat: a.lat,
+                lng: a.lng
+            })
+        });
+        if (!response.ok) throw new Error(`Server returned ${response.status}`);
+        a.dayID = newDay;
+    } catch (err) {
+        console.error("Failed to move activity:", err);
+        loadTripPage(currentTripId); // snap everything back to the saved state
+    }
+}
