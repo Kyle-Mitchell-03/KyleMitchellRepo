@@ -580,12 +580,12 @@ async function saveActivity(tripId, dayNumber){
     const activCost = document.getElementById("cost").value;
     const activST = document.getElementById("startTime").value;
     const activET = document.getElementById("endTime").value;
-    const {lat,lng} = await coordsFromLink(activDir);
-    if (!activTitle || !activDesc || !activDir || !activCost || !activST || !activET || !lat || !lng) {
+    if (!activTitle || !activDesc || !activDir || !activCost || !activST || !activET) {
         document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
         return;
     }
     try {
+        const {lat,lng} = await coordsFromLink(activDir);
         const response = await (fetch("/api/activities", {
             method: "POST",
             headers: {
