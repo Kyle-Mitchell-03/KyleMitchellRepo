@@ -9,7 +9,8 @@ CREATE TABLE Trips (
     startDate DATE NOT NULL,
     endDate DATE NOT NULL,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    lastViewed TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    lastViewed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    wishlist TEXT
 ) ENGINE = InnoDB DEFAULT charset=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE days (

@@ -9,9 +9,11 @@ async function tripPage() {
     wraps.innerHTML = `
         <main>
             <div id="error" class="error"></div>
-            <div class="card">
-                <input type="search" name="q" placeholder="Search Trips">
-            </div>
+            <header>
+                <h1>
+                    TripApp
+                </h1>
+            </header>
             <div id="trips" class="card"></div>
             <div class="card">
                 <button onclick="setParams()">Create Trip</button>
@@ -52,10 +54,6 @@ async function home() {
                     View Trips
                 </button>
             </div>
-            <div class = "dashboard">
-                <h2>Another Section</h2>
-                <p>add another option here</p>
-            </div>
         </main>
     `;
 }
@@ -78,6 +76,9 @@ async function setParams() {
             <button onclick = "createTrip()">
                 Create Trip
             </button>
+            <div class="card">
+                <button onclick="tripPage()">Back</button>
+            </div>
         </main>
     `;
 }
@@ -139,7 +140,7 @@ async function createTrip() {
     }
 }
 
-async function saveNotes(tripId, dayNumber){
+async function saveNotes(tripId, dayNumber) {
     const notesInp = document.getElementById("note").value;
     const errorDiv = document.getElementById("error");
 
@@ -160,22 +161,22 @@ async function saveNotes(tripId, dayNumber){
     }
 }
 
-async function pullDay(tripId,dayNumber){
+async function pullDay(tripId, dayNumber) {
     let day;
-    try{
+    try {
         const response = await fetch(`/api/Trips/${tripId}/days/${dayNumber}`);
-        if(!response.ok){
+        if (!response.ok) {
             throw new Error(`Server returned ${response.status}`);
         }
         day = await response.json();
     }
-    catch(err){
-        console.log("Failed to load single day: ",err);
+    catch (err) {
+        console.log("Failed to load single day: ", err);
     }
     return day;
 }
 
-async function fetchDays(id){
+async function fetchDays(id) {
     let dayList = [];
     try {
         const response = await fetch(`/api/days/${id}`);
@@ -190,36 +191,33 @@ async function fetchDays(id){
     return dayList;
 }
 
-async function fetchTrip(id){
+async function fetchTrip(id) {
     let trip = "";
-    try{
+    try {
         const response = await fetch(`/api/Trips/${id}`);
-        if(!response.ok)
-        {
+        if (!response.ok) {
             throw new Error(`Server returned ${response.status}`);
         }
         trip = await response.json();
     }
-    catch(err)
-    {
-        console.log("Failed to load Trip: ",err);
+    catch (err) {
+        console.log("Failed to load Trip: ", err);
         const errorDiv = document.getElementById("error");
         errorDiv.innerHTML = `<h2> Failed to load Trip </h2>`
     }
     return trip;
 }
 
-async function fetchActivities(id){
+async function fetchActivities(id) {
     let activ = [];
-    try{
+    try {
         const response = await fetch(`/api/activities/${id}`);
-        if(!response.ok)
-        {
+        if (!response.ok) {
             throw new Error(`Server returned ${response.status}`);
         }
         activ = await response.json();
     }
-    catch(err){
+    catch (err) {
         console.log("Failed to load Activities: ", err);
         const errorDiv = document.getElementById("error");
         errorDiv.innerHTML = `<h2>Failed to load activities</h2>`
@@ -227,18 +225,16 @@ async function fetchActivities(id){
     return activ;
 }
 
-async function fetchRestaurants(id){
+async function fetchRestaurants(id) {
     let rests = [];
-    try{
+    try {
         const response = await fetch(`/api/restaurants/${id}`);
-        if(!response.ok)
-        {
+        if (!response.ok) {
             throw new Error(`Server returned ${response.status}`);
         }
         rests = await response.json();
     }
-    catch(err)
-    {
+    catch (err) {
         console.log("Failed to load restuarants: ", err);
         const errorDiv = document.getElementById("error");
         errorDiv.innerHTML = `<h2>Failed to load activities</h2>`
@@ -291,6 +287,8 @@ async function loadFoodPage(id) {
                 <h3>${r.restName}</h3>
                 <p>${r.distance.toFixed(1)} mi away</p>
                 <p>${r.notes ?? ""}</p>
+                <button onclick = "window.location.href ='${r.location}'" class = "linkBtn">Directions</button>
+                <button onclick = "window.location.href ='${r.webpage}'" class = "linkBtn">Website</button>
             </div>
         `).join("");
     } catch (err) {
@@ -312,43 +310,52 @@ async function activityRestMap(id) {
     const map = L.map('map', { zoomControl: false }).setView([34.05, -118.25], 10);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    const [activities,restaurants] = await Promise.all([fetchActivities(id),fetchRestaurants(id)]);
+    const [activities, restaurants] = await Promise.all([fetchActivities(id), fetchRestaurants(id)]);
 
     const markers = [];
-    
+
     activities
-    .filter(a => a.lat != null && a.lng != null)
-    .forEach(a => {
-        markers.push(
-            L.marker([a.lat, a.lng])
-                .addTo(map)
-                .bindPopup(`<b>${a.activityName}</b><br>${a.notes ?? ""}</br><button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Directions</button>`)
-        );
-    });
+        .filter(a => a.lat != null && a.lng != null)
+        .forEach(a => {
+            markers.push(
+                L.marker([a.lat, a.lng])
+                    .addTo(map)
+                    .bindPopup(`
+    <b>${a.activityName}</b><br>
+    ${a.notes ?? ""}<br>
+    <button onclick="window.location.href='${a.location}'" class="linkBtn">Directions</button>
+`)
+            );
+        });
 
     restaurants
-    .filter(r => r.lat != null && r.lng != null)
-    .forEach(r => {
-        markers.push(
-            L.circleMarker([r.lat, r.lng], {color: "red"})
-                .addTo(map)
-                .bindPopup(`<b>${r.restName}</b><br>${r.notes ?? ""}</br><button onclick = "window.location.href ='${r.location}'" class = "linkBtn">Direction</button>`)
-        );
-    });
+        .filter(r => r.lat != null && r.lng != null)
+        .forEach(r => {
+            markers.push(
+                L.circleMarker([r.lat, r.lng], { color: "red" })
+                    .addTo(map)
+                    .bindPopup(`
+    <b>${r.restName}</b><br>
+    ${r.notes ?? ""}<br>
+    <button onclick="window.location.href='${r.location}'" class="linkBtn">Directions</button>
+    <button onclick="window.location.href='${r.webpage}'" class="linkBtn">Website</button>
+`)
+            );
+        });
 
-    if(markers.length){
+    if (markers.length) {
         map.fitBounds(L.featureGroup(markers).getBounds().pad(0.2));
     }
-    else{
+    else {
         document.getElementById("error").innerHTML = "<h2>No locations with coordinates yet!</h2>"
     }
 }
 
-async function loadTripPage(id){
+async function loadTripPage(id) {
     const trip = await fetchTrip(id);
     wraps.innerHTML = `
         <div id = "error" class = "error"></div>
@@ -365,9 +372,12 @@ async function loadTripPage(id){
         <div class = "card">
             <button onclick = "activityRestMap(${id})">Activity Map</button>
         </div>
+        <div class = "card">
+            <button onclick = "loadWishlist(${id})">Group Wishlist</button>
+        </div>
         <div class = "card" id = "days"></div>
     `;
-    
+
 
     const dayDiv = document.getElementById("days");
     const days = await fetchDays(id);
@@ -375,22 +385,20 @@ async function loadTripPage(id){
     currentTrip = id;
     currentActivities = activities;
 
-    if(!days || days.length == 0)
-    {
+    if (!days || days.length == 0) {
         dayDiv.innerHTML = `<p>No days for this trip yet</p>`;
     }
-    else
-    {
+    else {
         dayDiv.innerHTML = days.map(d => {
-            const dayActivities = activities.filter(a=> a.dayID === d.dayNumber);
-            const activitiesHTML = dayActivities.map(a=> `
+            const dayActivities = activities.filter(a => a.dayID === d.dayNumber);
+            const activitiesHTML = dayActivities.map(a => `
                     <div class = "activity" data-id="${a.id}">
                     <div class = "headerDiv">
                     <span class = "dragHandle">⠿</span>
                         <h3>${a.activityName}</h3>
-                        <p>${a.cost}</p>
-                        <p>${formatTimeString(a.startTime)} - ${formatTimeString(a.endTime)}</p>
-                        <p>${a.notes}</p> 
+                        <p>${show(a.cost)}</p>
+                        <p>${formatTimeRange(a.startTime, a.endTime)}</p>
+                        <p>${show(a.notes)}</p> 
                         <button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Directions</button> 
                     </div>
                     </div>
@@ -400,7 +408,7 @@ async function loadTripPage(id){
                 <div class = "dayDiv" data-day = "${d.dayNumber}">
                     <div class = "dayHeaderDiv">
                         <h1>${d.dayDate}</h1>
-                        <button class = "editBtn" onclick="editDay(${id},${d.dayNumber})">edit</button>
+                        <button class = "editBtn" onclick="editDay(${id},${d.dayNumber})">Edit</button>
                     </div>
                     <p>${d.notes || "Add a description!"}</p>
                     <div class = "activeDiv">${activitiesHTML}</div>
@@ -426,8 +434,57 @@ async function deleteTrip(id) {
     tripPage();
 }
 
-async function editDay(tripId,dayNumber){
-    const day = await pullDay(tripId,dayNumber);
+async function loadWishlist(id) {
+    const trip = await fetchTrip(id);
+    wraps.innerHTML = `
+        <div class="wishlistPage">
+            <div id="error" class="error"></div>
+            <header>
+                <h1>${trip.Title}</h1>
+            </header>
+            <div class="card wishlistCard">
+                <textarea id="wishlist">${trip.wishlist ?? ""}</textarea>
+            </div>
+            <div class="card wishlistActions">
+                <button onclick="saveWishlistChanges(${id})">Save Changes</button>
+                <button onclick="loadTripPage(${id})">Back</button>
+            </div>
+        </div>
+    `;
+}
+
+async function saveWishlistChanges(id)
+{
+    const wishlist = document.getElementById("wishlist").value;
+    if (!wishlist) {
+        document.getElementById("error").innerHTML = '<h2>Please fill in the wishlist</h2>';
+        return;
+    }
+    try {
+        const response = await (fetch(`/api/Trips/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: id,
+                wishlist: wishlist
+            })
+        }));
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || "Wishlist Save Failed");
+        }
+        loadTripPage(id);
+    }
+    catch (err) {
+        console.error("Failed to save wishlist:", err);
+        document.getElementById("error").innerHTML = '<h2>Failed to save Wishlist</h2>';
+    }
+}
+
+async function editDay(tripId, dayNumber) {
+    const day = await pullDay(tripId, dayNumber);
     wraps.innerHTML = `
         <div id = "error" class = "error"></div>
         <header>
@@ -439,33 +496,33 @@ async function editDay(tripId,dayNumber){
             <button onclick="loadTripPage(${tripId})">Back</button>
         </div>
         <div class = "card">
-                <input type = "param" id = "note" placeholder = "${day.notes ?? ''}">
+                <input type = "param" id = "note" value = "${day.notes ?? ''}">
         </div>
         <div class = "card" id = "activs"></div>
     `;
     const activities = await fetchActivities(tripId);
-    const dayActivities = activities.filter(a=> a.dayID === dayNumber);
-            const activitiesHTML = dayActivities.map(a=> `
+    const dayActivities = activities.filter(a => a.dayID === dayNumber);
+    const activitiesHTML = dayActivities.map(a => `
                     <div class = "activity">
                     <div class = "headerDiv">
                         <h3>${a.activityName}</h3>
-                        <p>${a.cost}</p>
-                        <p>${a.startTime}-${a.endTime}</p>
+                        <p>${show(a.cost)}</p>
+                        <p>${formatTimeRange(a.startTime,a.endTime)}</p>
                         <button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Directions</button> 
-                        <p>${a.notes}</p> 
+                        <p>${show(a.notes)}</p> 
                         <button onclick = "editActivity(${tripId},${dayNumber},${a.id})">Edit Activity</button>
                     </div>
                     </div>
                 `).join("");
 
     document.getElementById("activs").innerHTML = `${activitiesHTML}`;
-    
+
 }
 
-async function editActivity(tripId, dayNumber, activityId){
+async function editActivity(tripId, dayNumber, activityId) {
     const activs = await fetchActivities(tripId);
-    const day = await pullDay(tripId,dayNumber);
-    const a = activs.find(a=> a.id === activityId && a.dayID === dayNumber);
+    const day = await pullDay(tripId, dayNumber);
+    const a = activs.find(a => a.id === activityId && a.dayID === dayNumber);
     console.log(a);
     wraps.innerHTML = `
         <div id = "error" class = "error"></div>
@@ -473,12 +530,12 @@ async function editActivity(tripId, dayNumber, activityId){
             <h1>${a.activityName}</h1>
         </header>
         <div class = "card">
-            <input type = "param" id = "title" placeholder = "${a?.activityName}">
-            <input type = "param" id = "desc" placeholder = "${a?.notes}">
-            <input type = "param" id = "direction" placeholder = "${a?.location}">
-            <input type = "param" id = "cost" placeholder = "${a?.cost}">
-            <input type = "time" id = "startTime" placeholder = "${a?.startTime || ""}">
-            <input type = "time" id = "endTime" placeholder = "${a?.endTime || ""}">
+            <input type = "param" id = "title" value = "${a?.activityName}">
+            <input type = "param" id = "desc" value = "${a?.notes}">
+            <input type = "param" id = "direction" value = "${a?.location}">
+            <input type = "param" id = "cost" value = "${show(a?.cost)}">
+            <input type = "time" id = "startTime" value = "${show(a?.startTime || "")}">
+            <input type = "time" id = "endTime" value = "${show(a?.endTime || "")}">
         </div>
         <div>
             <button onclick = "saveEditActivity(${tripId},${dayNumber},${activityId})">Save Changes</button>
@@ -487,19 +544,19 @@ async function editActivity(tripId, dayNumber, activityId){
     `;
 }
 
-async function saveEditActivity(tripId, dayNumber, activityId){
+async function saveEditActivity(tripId, dayNumber, activityId) {
     const activTitle = document.getElementById("title").value;
     const activDesc = document.getElementById("desc").value;
     const activDir = document.getElementById("direction").value;
     const activCost = document.getElementById("cost").value;
     const activST = document.getElementById("startTime").value;
     const activET = document.getElementById("endTime").value;
-    const {lat, lng} = await coordsFromLink(activDir);
-    if (!activTitle || !activDesc || !activDir || !activCost || !activST || !activET || !lat || !lng) {
+    if (!activTitle || !activDesc || !activDir) {
         document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
         return;
     }
     try {
+        const { lat, lng } = await coordsFromLink(activDir);
         const response = await (fetch(`/api/activities/${activityId}`, {
             method: "PUT",
             headers: {
@@ -532,7 +589,7 @@ async function saveEditActivity(tripId, dayNumber, activityId){
 
 }
 
-async function deleteActivity(tripId, dayNumber, activityId){
+async function deleteActivity(tripId, dayNumber, activityId) {
     if (!confirm("Delete this activity?")) return;
 
     try {
@@ -550,19 +607,19 @@ async function deleteActivity(tripId, dayNumber, activityId){
     }
 }
 
-async function createActivity(tripId,dayNumber){
-    const day = await pullDay(tripId,dayNumber);
+async function createActivity(tripId, dayNumber) {
+    const day = await pullDay(tripId, dayNumber);
     const activs = await fetchActivities(tripId);
-    const a = activs.filter(a=> a.dayID === dayNumber);
+    const a = activs.filter(a => a.dayID === dayNumber);
     wraps.innerHTML = `
         <div id = "error" class = "error"></div>
         <header>
             <h1>${day.dayDate}</h1>
         </header>
         <div class = "card">
-            <input type = "param" id = "title" placeholder = "title">
-            <input type = "param" id = "desc" placeholder = "desc">
-            <input type = "param" id = "direction" placeholder = "dir">
+            <input type = "param" id = "title" placeholder = "title *">
+            <input type = "param" id = "desc" placeholder = "desc *">
+            <input type = "param" id = "direction" placeholder = "dir *">
             <input type = "param" id = "cost" placeholder = "cost">
             <input type = "time" id = "startTime" placeholder = "st">
             <input type = "time" id = "endTime" placeholder = "et">
@@ -570,22 +627,25 @@ async function createActivity(tripId,dayNumber){
         <div>
             <button onclick = saveActivity(${tripId},${dayNumber})>Create Activity</button>
         </div>
+        <div class="card">
+            <button onclick="loadTripPage(${tripId})">Back</button>
+        </div>
     `;
 }
 
-async function saveActivity(tripId, dayNumber){
+async function saveActivity(tripId, dayNumber) {
     const activTitle = document.getElementById("title").value;
     const activDesc = document.getElementById("desc").value;
     const activDir = document.getElementById("direction").value;
     const activCost = document.getElementById("cost").value;
     const activST = document.getElementById("startTime").value;
     const activET = document.getElementById("endTime").value;
-    if (!activTitle || !activDesc || !activDir || !activCost || !activST || !activET) {
+    if (!activTitle || !activDesc || !activDir ) {
         document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
         return;
     }
     try {
-        const {lat,lng} = await coordsFromLink(activDir);
+        const { lat, lng } = await coordsFromLink(activDir);
         const response = await (fetch("/api/activities", {
             method: "POST",
             headers: {
@@ -617,20 +677,23 @@ async function saveActivity(tripId, dayNumber){
     }
 }
 
-async function createRestaurant(id){
-    wraps .innerHTML = `
+async function createRestaurant(id) {
+    wraps.innerHTML = `
         <div id = "error" class = "error"></div>
         <header>
             <h1>Add Resturant</h1>
         </header>
         <div class = "card">
-            <input type = "param" id = "name" placeholder = "name">
-            <input type = "param" id = "desc" placeholder = "desc">
-            <input type = "param" id = "direction" placeholder = "dir">
+            <input type = "param" id = "name" placeholder = "name *">
+            <input type = "param" id = "desc" placeholder = "desc *">
+            <input type = "param" id = "direction" placeholder = "dir *">
             <input type = "param" id = "webpage" placeholder = "wbpg">
         </div>
         <div>
             <button onclick = "saveRestaurant(${id})">Save Restaurant</button>
+        </div>
+        <div class="card">
+            <button onclick="loadTripPage(${id})">Back</button>
         </div>
     `;
 }
@@ -642,21 +705,17 @@ async function coordsFromLink(link) {
     return data;   // { lat, lng }
 }
 
-async function saveRestaurant(id){
+async function saveRestaurant(id) {
     const name = document.getElementById("name").value;
     const desc = document.getElementById("desc").value;
     const dir = document.getElementById("direction").value;
     const wbpg = document.getElementById("webpage").value;
-    //Put helper function to convert lat lng here, pass on with save Rest
-    //Put helper function to get your lat long here
-    //Call helper, sort by closeness here
-    //const lat = ?, const lng = ?
-    if (!name || !dir ) {
-        document.getElementById("error").innerHTML = '<h2>Please fill in name and address</h2>';
+    if (!name || !desc || !dir) {
+        document.getElementById("error").innerHTML = '<h2>Please fill in name, description, and address</h2>';
         return;
     }
     try {
-        const {lat,lng} = await coordsFromLink(dir);
+        const { lat, lng } = await coordsFromLink(dir);
         const response = await (fetch("/api/restaurants", {
             method: "POST",
             headers: {
@@ -685,27 +744,38 @@ async function saveRestaurant(id){
 }
 
 function sortByCloseness(myLat, myLng, rests, unit = "mi") {
-  const R = unit === "km" ? 6371.0088 : 3958.7613; // Earth radius
-  const rad = (d) => (d * Math.PI) / 180;
+    const R = unit === "km" ? 6371.0088 : 3958.7613; // Earth radius
+    const rad = (d) => (d * Math.PI) / 180;
 
-  return rests
-    .map((r) => {
-      const dLat = rad(r.lat - myLat);
-      const dLng = rad(r.lng - myLng);
-      const a =
-        Math.sin(dLat / 2) ** 2 +
-        Math.cos(rad(myLat)) * Math.cos(rad(r.lat)) * Math.sin(dLng / 2) ** 2;
-      return { ...r, distance: 2 * R * Math.asin(Math.sqrt(a)) };
-    })
-    .sort((a, b) => a.distance - b.distance); // nearest first
+    return rests
+        .map((r) => {
+            const dLat = rad(r.lat - myLat);
+            const dLng = rad(r.lng - myLng);
+            const a =
+                Math.sin(dLat / 2) ** 2 +
+                Math.cos(rad(myLat)) * Math.cos(rad(r.lat)) * Math.sin(dLng / 2) ** 2;
+            return { ...r, distance: 2 * R * Math.asin(Math.sqrt(a)) };
+        })
+        .sort((a, b) => a.distance - b.distance); // nearest first
+}
+
+function show(value) {
+    return value == null ? "" : value;
 }
 
 function formatTimeString(timeString) {
-  let [hours, minutes] = timeString.split(':');
-  hours = parseInt(hours, 10);
-  const period = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12 || 12; 
-  return `${hours}:${minutes} ${period}`;
+    let [hours, minutes] = timeString.split(':');
+    hours = parseInt(hours, 10);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return `${hours}:${minutes} ${period}`;
+}
+
+function formatTimeRange(start, end) {
+    const s = formatTimeString(start);
+    const e = formatTimeString(end);
+    if (s && e) return `${s} - ${e}`;
+    return s || e;
 }
 
 let currentTripId = null;
@@ -786,6 +856,11 @@ async function moveActivity(activityId, newDay) {
         a.dayID = newDay;
     } catch (err) {
         console.error("Failed to move activity:", err);
-        loadTripPage(currentTripId); // snap everything back to the saved state
+        loadTripPage(currentTripId);
     }
+}
+
+function autoGrow(el) {
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
 }

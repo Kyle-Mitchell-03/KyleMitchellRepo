@@ -323,6 +323,24 @@ app.put('/api/Trips/:tripId/days/:dayNumber', async (req, res, next) => {
         next(err);
     }
 });
+
+app.put('/api/Trips/:id', async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { wishlist } = req.body;
+ 
+        const [result] = await pool.query(
+            'UPDATE Trips SET wishlist = ? WHERE id = ?',
+            [wishlist, id]
+        );
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Trip not found' });
+        }
+        res.json({ message: 'Wishlist saved' });
+    } catch (err) {
+        next(err);
+    }
+});
  
 app.put('/api/activities/:activityId', async (req, res, next) => {
     const { activityId } = req.params;
