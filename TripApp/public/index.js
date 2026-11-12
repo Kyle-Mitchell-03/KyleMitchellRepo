@@ -382,7 +382,7 @@ async function loadTripPage(id) {
     const dayDiv = document.getElementById("days");
     const days = await fetchDays(id);
     const activities = await fetchActivities(id);
-    currentTrip = id;
+    currentTripId = id;
     currentActivities = activities;
 
     if (!days || days.length == 0) {
@@ -390,7 +390,7 @@ async function loadTripPage(id) {
     }
     else {
         dayDiv.innerHTML = days.map(d => {
-            const dayActivities = activities.filter(a => a.dayID === d.dayNumber);
+            const dayActivities = activities.filter(a => a.dayID === d.id);
             const activitiesHTML = dayActivities.map(a => `
                     <div class = "activity" data-id="${a.id}">
                     <div class = "headerDiv">
@@ -405,7 +405,7 @@ async function loadTripPage(id) {
                 `).join("");
 
             return `
-                <div class = "dayDiv" data-day = "${d.dayNumber}">
+                <div class = "dayDiv" data-day = "${d.id}">
                     <div class = "dayHeaderDiv">
                         <h1>${d.dayDate}</h1>
                         <button class = "editBtn" onclick="editDay(${id},${d.dayNumber})">Edit</button>
@@ -501,7 +501,7 @@ async function editDay(tripId, dayNumber) {
         <div class = "card" id = "activs"></div>
     `;
     const activities = await fetchActivities(tripId);
-    const dayActivities = activities.filter(a => a.dayID === dayNumber);
+    const dayActivities = activities.filter(a => a.dayID === day.id);
     const activitiesHTML = dayActivities.map(a => `
                     <div class = "activity">
                     <div class = "headerDiv">
@@ -522,7 +522,7 @@ async function editDay(tripId, dayNumber) {
 async function editActivity(tripId, dayNumber, activityId) {
     const activs = await fetchActivities(tripId);
     const day = await pullDay(tripId, dayNumber);
-    const a = activs.find(a => a.id === activityId && a.dayID === dayNumber);
+    const a = activs.find(a => a.id === activityId && a.dayID === day.id);
     console.log(a);
     wraps.innerHTML = `
         <div id = "error" class = "error"></div>
@@ -551,6 +551,7 @@ async function saveEditActivity(tripId, dayNumber, activityId) {
     const activCost = document.getElementById("cost").value;
     const activST = document.getElementById("startTime").value;
     const activET = document.getElementById("endTime").value;
+    const day = await pullDay(tripId,dayNumber);
     if (!activTitle || !activDesc || !activDir) {
         document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
         return;
@@ -564,7 +565,7 @@ async function saveEditActivity(tripId, dayNumber, activityId) {
             },
             body: JSON.stringify({
                 tripId: tripId,
-                dayID: dayNumber,
+                dayID: day.id,
                 activityName: activTitle,
                 notes: activDesc,
                 location: activDir,
@@ -610,7 +611,6 @@ async function deleteActivity(tripId, dayNumber, activityId) {
 async function createActivity(tripId, dayNumber) {
     const day = await pullDay(tripId, dayNumber);
     const activs = await fetchActivities(tripId);
-    const a = activs.filter(a => a.dayID === dayNumber);
     wraps.innerHTML = `
         <div id = "error" class = "error"></div>
         <header>
@@ -634,6 +634,11 @@ async function createActivity(tripId, dayNumber) {
 }
 
 async function saveActivity(tripId, dayNumber) {
+    const day = await pullDay(tripId,dayNumber);
+    if (!day) {
+        document.getElementById("error").innerHTML = '<h2>Day not found</h2>';
+        return;
+    }
     const activTitle = document.getElementById("title").value;
     const activDesc = document.getElementById("desc").value;
     const activDir = document.getElementById("direction").value;
@@ -653,7 +658,7 @@ async function saveActivity(tripId, dayNumber) {
             },
             body: JSON.stringify({
                 tripId: tripId,
-                dayID: dayNumber,
+                dayID: day.id,
                 activityName: activTitle,
                 notes: activDesc,
                 location: activDir,
@@ -764,6 +769,7 @@ function show(value) {
 }
 
 function formatTimeString(timeString) {
+    if(!timeString) return "";
     let [hours, minutes] = timeString.split(':');
     hours = parseInt(hours, 10);
     const period = hours >= 12 ? 'PM' : 'AM';
@@ -772,6 +778,7 @@ function formatTimeString(timeString) {
 }
 
 function formatTimeRange(start, end) {
+    if(!start && !end) return;
     const s = formatTimeString(start);
     const e = formatTimeString(end);
     if (s && e) return `${s} - ${e}`;

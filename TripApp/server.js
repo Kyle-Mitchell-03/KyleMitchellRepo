@@ -344,7 +344,7 @@ app.put('/api/Trips/:id', async (req, res, next) => {
  
 app.put('/api/activities/:activityId', async (req, res, next) => {
     const { activityId } = req.params;
-    const { activityName, notes, location, cost, startTime, endTime, lat, lng} = req.body;
+    const { dayID, activityName, notes, location, cost, startTime, endTime, lat, lng} = req.body;
  
     if (!activityName) {
         return res.status(400).json({ error: 'activityName is required' });
@@ -353,9 +353,10 @@ app.put('/api/activities/:activityId', async (req, res, next) => {
     try {
         const [result] = await pool.query(
             `UPDATE activities
-             SET activityName = ?, notes = ?, location = ?, cost = ?, startTime = ?, endTime = ?, lat = ?, lng = ?
+             SET dayID = COALESCE(?,dayID), activityName = ?, notes = ?, location = ?, cost = ?, startTime = ?, endTime = ?, lat = ?, lng = ?
              WHERE id = ?`,
             [
+                dayID ?? null,
                 activityName,
                 notes || null,
                 location || null,
@@ -398,12 +399,20 @@ app.post(`/api/restaurants`, async(req,res,next) => {
  
 app.post('/api/activities', async (req, res, next) => {
     const { tripId, dayID, activityName, notes, location, cost, startTime, endTime, lat, lng } = req.body;
- 
+
     if (!tripId || !dayID || !activityName) {
         return res.status(400).json({ error: 'tripId, dayID, and activityName are required' });
     }
- 
+
     try {
+        const [days] = await pool.query(
+            'SELECT id FROM days WHERE id = ? AND tripID = ?',
+            [dayID, tripId]
+        );
+        if (days.length === 0) {
+            return res.status(400).json({ error: 'That day does not belong to this trip' });
+        }
+
         const [result] = await pool.query(
             `INSERT INTO activities (tripId, dayID, activityName, notes, location, cost, startTime, endTime, lat, lng)
              VALUES (?,?,?,?,?,?,?,?,?,?)`,
