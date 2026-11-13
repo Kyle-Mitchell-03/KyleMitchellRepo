@@ -513,4 +513,4 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Server error' });
 });
  
-app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+app.listen(3000, '0.0.0.0', () => console.log('Server running on http://localhost:3000'));

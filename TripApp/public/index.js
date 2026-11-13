@@ -7,11 +7,10 @@ let tripList = [];
 
 async function tripPage() {
     wraps.innerHTML = `
-        <main>
             <div id="error" class="error"></div>
             <header>
                 <h1>
-                    TripApp
+                    TRIPAPP
                 </h1>
             </header>
             <div id="trips" class="card"></div>
@@ -21,7 +20,6 @@ async function tripPage() {
             <div class="card">
                 <button onclick="home()">Home</button>
             </div>
-        </main>
     `;
 
     const tripDiv = document.getElementById("trips");
@@ -33,10 +31,10 @@ async function tripPage() {
             throw new Error(`Server returned ${response.status}`);
         }
         const tripList = await response.json();
-        tripDiv.innerHTML = tripList.map(t => `<div class = "card button-card">
+        tripDiv.innerHTML = tripList.map(t => `
                                                     <button id = "tripButton" onclick = "loadTripPage(${t.id})">${t.Title}</button>
                                                     <button class = "delete" id = "delTrip" onclick = "deleteTrip(${t.id})">Delete</button>
-                                                </div>`).join("");
+                                                `).join("");
     } catch (err) {
         console.log("Failed to load Trips:", err);
         errorDiv.innerHTML = `<h2>Failed to load Trips</h2>`;
@@ -46,7 +44,7 @@ async function tripPage() {
 async function home() {
     wraps.innerHTML = `
     <header>
-            <h1>TripApp</h1>
+            <h1>TRIPAPP</h1>
         </header>
         <main>
             <div class = "card">
@@ -283,7 +281,7 @@ async function loadFoodPage(id) {
         const sorted = sortByCloseness(me.lat, me.lng, rests);
 
         document.getElementById("rests").innerHTML = sorted.map(r => `
-            <div class="card">
+            <div class="restCard">
                 <h3>${r.restName}</h3>
                 <p>${r.distance.toFixed(1)} mi away</p>
                 <p>${r.notes ?? ""}</p>
