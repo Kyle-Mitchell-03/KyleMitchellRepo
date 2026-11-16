@@ -17,9 +17,6 @@ async function tripPage() {
             <div class="card">
                 <button onclick="setParams()">Create Trip</button>
             </div>
-            <div class="card">
-                <button onclick="home()">Home</button>
-            </div>
     `;
 
     const tripDiv = document.getElementById("trips");
@@ -869,3 +866,5 @@ function autoGrow(el) {
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
 }
+
+document.addEventListener("DOMContentLoaded", tripPage);
