@@ -2,6 +2,7 @@ const wraps = document.getElementById("wrapper");
 const errors = document.getElementById("error");
 const tripDiv = document.getElementById("trips");
 let tripList = [];
+let activeMap = null;
 
 
 
@@ -10,7 +11,7 @@ async function tripPage() {
             <div id="error" class="error"></div>
             <header>
                 <h1>
-                    TRIPAPP
+                    TRIPWEB
                 </h1>
             </header>
             <div id="trips" class="card"></div>
@@ -38,21 +39,6 @@ async function tripPage() {
     }
 }
 
-async function home() {
-    wraps.innerHTML = `
-    <header>
-            <h1>TRIPAPP</h1>
-        </header>
-        <main>
-            <div class = "card">
-                <button onclick = "tripPage()">
-                    View Trips
-                </button>
-            </div>
-        </main>
-    `;
-}
-
 async function setParams() {
     wraps.innerHTML = `
         <main>
@@ -63,14 +49,14 @@ async function setParams() {
                 <input type = "param" id = "name" placeholder = "Trip Name">
             </div>
             <div class = "card">
-                <input type = "date" id = "Startdate" placeholder = "StartDate">
+                <input type = "date" id = "Startdate" data-placeholder = "MM/DD/YYYY" required>
             </div>
             <div class = "card">
-                <input type = "date" id = "Enddate" placeholder = "EndDate">
+                <input type = "date" id = "Enddate" data-placeholder = "MM/DD/YYYY" required>
             </div>
-            <button onclick = "createTrip()">
-                Create Trip
-            </button>
+            <div class = "card">
+                <button onclick = "createTrip()">Create Trip</button>
+            </div>
             <div class="card">
                 <button onclick="tripPage()">Back</button>
             </div>
@@ -122,10 +108,10 @@ async function createTrip() {
                 <input type = "param" id = "name" placeholder = "Trip Name">
             </div>
             <div class = "card">
-                <input type = "date" id = "Startdate" placeholder = "StartDate">
+                <input type = "date" id = "Startdate" data-placeholder = "MM/DD/YYYY" required>
             </div>
             <div class = "card">
-                <input type = "date" id = "Enddate" placeholder = "EndDate">
+                <input type = "date" id = "Enddate" data-placeholder = "MM/DD/YYYY" required>
             </div>
             <button onclick = "createTrip()">
                 Create Trip
@@ -266,10 +252,11 @@ async function loadFoodPage(id) {
         <div class = "card">
             <button onclick = "createRestaurant(${id})">Add Restaurant</button>
         </div>
-        <div class = "card" id = "rests"></div>
         <div class="card">
             <button onclick="loadTripPage(${id})">Back</button>
-        </div>`;
+        </div>
+        <div class = "card" id = "rests"></div>
+        `;
 
     const errorDiv = document.getElementById("error");
     try {
@@ -284,6 +271,7 @@ async function loadFoodPage(id) {
                 <p>${r.notes ?? ""}</p>
                 <button onclick = "window.location.href ='${r.location}'" class = "linkBtn">Directions</button>
                 <button onclick = "window.location.href ='${r.webpage}'" class = "linkBtn">Website</button>
+                <button class = "delete" onclick = "editRest(${id}, ${r.id})">Edit</button>
             </div>
         `).join("");
     } catch (err) {
@@ -295,14 +283,26 @@ async function loadFoodPage(id) {
     }
 }
 
+function stopMapLocate() {
+    if (activeMap) {
+        activeMap.stopLocate();
+        activeMap.remove();
+        activeMap = null;
+    }
+}
+
 async function activityRestMap(id) {
     wraps.innerHTML = `
         <div id="map"></div>
-        <button class="mapBack" onclick="loadTripPage(${id})">Back</button>
+        <button class="mapBack" onclick="stopMapLocate(); loadTripPage(${id})">Back</button>
+        <button class="mapBack mapFit" onclick="fitAll()">All pins</button>
         <div id="error" class="error mapError"></div>
         `;
 
+    const errorDiv = document.getElementById("error");
+
     const map = L.map('map', { zoomControl: false }).setView([34.05, -118.25], 10);
+    activeMap = map;
     L.control.zoom({ position: 'bottomright' }).addTo(map);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -342,12 +342,61 @@ async function activityRestMap(id) {
             );
         });
 
-    if (markers.length) {
-        map.fitBounds(L.featureGroup(markers).getBounds().pad(0.2));
-    }
-    else {
-        document.getElementById("error").innerHTML = "<h2>No locations with coordinates yet!</h2>"
-    }
+    // Used by the "All pins" button and as the fallback if location fails
+    const fitPins = () => {
+        if (markers.length) {
+            map.fitBounds(L.featureGroup(markers).getBounds().pad(0.2));
+        }
+    };
+    window.fitAll = fitPins;
+
+    // ---- Your location ----
+    const youIcon = L.divIcon({
+        className: 'youMarker',
+        iconSize: [18, 18],
+        iconAnchor: [9, 9]
+    });
+
+    let youMarker = null;
+    let youAccuracy = null;
+    let centered = false;     // true once we've jumped to your first fix
+    let fellBack = false;     // true once we've shown the pins because location failed
+    const noPins = markers.length === 0;
+
+    // Status message while waiting for the first fix
+    errorDiv.innerHTML = noPins
+        ? "<h2>No locations with coordinates yet!</h2>"
+        : "<h2>Finding you...</h2>";
+
+    map.on('locationfound', e => {
+        if (!youMarker) {
+            youMarker = L.marker(e.latlng, { icon: youIcon, zIndexOffset: 1000 })
+                .addTo(map)
+                .bindPopup("You are here");
+            youAccuracy = L.circle(e.latlng, { radius: e.accuracy, color: '#2a7de1', weight: 1, fillOpacity: 0.1 })
+                .addTo(map);
+        } else {
+            youMarker.setLatLng(e.latlng);
+            youAccuracy.setLatLng(e.latlng).setRadius(e.accuracy);
+        }
+
+        if (!centered) {
+            centered = true;
+            map.setView(e.latlng, 15);
+            if (!noPins) errorDiv.innerHTML = "";   // clear "Finding you..."
+        }
+    });
+
+    map.on('locationerror', () => {
+        console.warn("Couldn't get your location");
+        // Only fall back once, and never after we've already centered on you
+        if (centered || fellBack) return;
+        fellBack = true;
+        if (!noPins) errorDiv.innerHTML = "";
+        fitPins();
+    });
+
+    map.locate({ watch: true, enableHighAccuracy: true });
 }
 
 async function loadTripPage(id) {
@@ -359,7 +408,7 @@ async function loadTripPage(id) {
         </header>
         <p> ${trip.destination ?? ""} </p>
         <div class="card">
-            <button onclick="home()">Home</button>
+            <button onclick="tripPage()">Home</button>
         </div>
         <div class = "card">
             <button onclick = "loadFoodPage(${id})">Food Near Me</button>
@@ -414,6 +463,8 @@ async function loadTripPage(id) {
 }
 
 async function deleteTrip(id) {
+    if (!confirm("Delete this Trip?")) return;
+
     try {
         const response = await fetch(`/api/Trips/${id}`, {
             method: "DELETE"
@@ -437,19 +488,20 @@ async function loadWishlist(id) {
             <header>
                 <h1>${trip.Title}</h1>
             </header>
+            <div class="card">
+                <button onclick="saveWishlistChanges(${id})">Save Changes</button>
+            </div>
+            <div class = "card">
+                <button onclick="loadTripPage(${id})">Back</button>
+            </div>
             <div class="card wishlistCard">
                 <textarea id="wishlist">${trip.wishlist ?? ""}</textarea>
-            </div>
-            <div class="card wishlistActions">
-                <button onclick="saveWishlistChanges(${id})">Save Changes</button>
-                <button onclick="loadTripPage(${id})">Back</button>
             </div>
         </div>
     `;
 }
 
-async function saveWishlistChanges(id)
-{
+async function saveWishlistChanges(id) {
     const wishlist = document.getElementById("wishlist").value;
     if (!wishlist) {
         document.getElementById("error").innerHTML = '<h2>Please fill in the wishlist</h2>';
@@ -491,7 +543,7 @@ async function editDay(tripId, dayNumber) {
             <button onclick="loadTripPage(${tripId})">Back</button>
         </div>
         <div class = "card">
-                <input type = "param" id = "note" value = "${day.notes ?? ''}">
+                <input type = "param" id = "note" value = "${day.notes ?? 'Add a description!'}">
         </div>
         <div class = "card" id = "activs"></div>
     `;
@@ -502,10 +554,10 @@ async function editDay(tripId, dayNumber) {
                     <div class = "headerDiv">
                         <h3>${a.activityName}</h3>
                         <p>${show(a.cost)}</p>
-                        <p>${formatTimeRange(a.startTime,a.endTime)}</p>
-                        <button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Directions</button> 
+                        <p>${formatTimeRange(a.startTime, a.endTime)}</p>
                         <p>${show(a.notes)}</p> 
-                        <button onclick = "editActivity(${tripId},${dayNumber},${a.id})">Edit Activity</button>
+                        <button onclick = "window.location.href ='${a.location}'" class = "linkBtn">Directions</button> 
+                        <button class = "delete" onclick = "editActivity(${tripId},${dayNumber},${a.id})">Edit Activity</button>
                     </div>
                     </div>
                 `).join("");
@@ -517,8 +569,11 @@ async function editDay(tripId, dayNumber) {
 async function editActivity(tripId, dayNumber, activityId) {
     const activs = await fetchActivities(tripId);
     const day = await pullDay(tripId, dayNumber);
-    const a = activs.find(a => a.id === activityId && a.dayID === day.id);
-    console.log(a);
+    const a = activs.find(a => a.id === activityId && a.dayID === day?.id);
+    if (!a) {
+        editDay(tripId, dayNumber);
+        return;
+    }
     wraps.innerHTML = `
         <div id = "error" class = "error"></div>
         <header>
@@ -529,13 +584,18 @@ async function editActivity(tripId, dayNumber, activityId) {
             <input type = "param" id = "desc" value = "${a?.notes}">
             <input type = "param" id = "direction" value = "${a?.location}">
             <input type = "param" id = "cost" value = "${show(a?.cost)}">
-            <input type = "time" id = "startTime" value = "${show(a?.startTime || "")}">
-            <input type = "time" id = "endTime" value = "${show(a?.endTime || "")}">
+            <input type = "time" id = "startTime" data-placeholder = " Start Time - 00:00" value = "${show(a?.startTime || "")}">
+            <input type = "time" id = "endTime" data-placeholder = "End Time - 00:00" value = "${show(a?.endTime || "")}">
         </div>
-        <div>
+        <div class = "card">
             <button onclick = "saveEditActivity(${tripId},${dayNumber},${activityId})">Save Changes</button>
+        </div>
+        <div class = "card">
             <button class = "delete" onclick = "deleteActivity(${tripId},${dayNumber},${activityId})">Delete</button>
         </div>
+        <div class = "card">
+            <button onclick = "editDay(${tripId},${dayNumber})">Back</button>
+        </div> 
     `;
 }
 
@@ -546,7 +606,7 @@ async function saveEditActivity(tripId, dayNumber, activityId) {
     const activCost = document.getElementById("cost").value;
     const activST = document.getElementById("startTime").value;
     const activET = document.getElementById("endTime").value;
-    const day = await pullDay(tripId,dayNumber);
+    const day = await pullDay(tripId, dayNumber);
     if (!activTitle || !activDesc || !activDir) {
         document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
         return;
@@ -616,10 +676,10 @@ async function createActivity(tripId, dayNumber) {
             <input type = "param" id = "desc" placeholder = "desc *">
             <input type = "param" id = "direction" placeholder = "dir *">
             <input type = "param" id = "cost" placeholder = "cost">
-            <input type = "time" id = "startTime" placeholder = "st">
-            <input type = "time" id = "endTime" placeholder = "et">
+            <input type = "time" id = "startTime" data-placeholder = "Start Time - 00:00" required>
+            <input type = "time" id = "endTime" data-placeholder = "End Time - 00:00" required>
         </div>
-        <div>
+        <div class = "card">
             <button onclick = saveActivity(${tripId},${dayNumber})>Create Activity</button>
         </div>
         <div class="card">
@@ -629,7 +689,7 @@ async function createActivity(tripId, dayNumber) {
 }
 
 async function saveActivity(tripId, dayNumber) {
-    const day = await pullDay(tripId,dayNumber);
+    const day = await pullDay(tripId, dayNumber);
     if (!day) {
         document.getElementById("error").innerHTML = '<h2>Day not found</h2>';
         return;
@@ -640,7 +700,7 @@ async function saveActivity(tripId, dayNumber) {
     const activCost = document.getElementById("cost").value;
     const activST = document.getElementById("startTime").value;
     const activET = document.getElementById("endTime").value;
-    if (!activTitle || !activDesc || !activDir ) {
+    if (!activTitle || !activDesc || !activDir) {
         document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
         return;
     }
@@ -689,13 +749,99 @@ async function createRestaurant(id) {
             <input type = "param" id = "direction" placeholder = "dir *">
             <input type = "param" id = "webpage" placeholder = "wbpg">
         </div>
-        <div>
+        <div class = "card">
             <button onclick = "saveRestaurant(${id})">Save Restaurant</button>
         </div>
         <div class="card">
             <button onclick="loadTripPage(${id})">Back</button>
         </div>
     `;
+}
+
+async function editRest(tripId, id) {
+    const rests = await fetchRestaurants(tripId);
+    const r = rests.find(r => r.id === id);
+    if (!r) {
+        loadFoodPage(tripId);
+        return;
+    }
+    wraps.innerHTML = `
+        <div id = "error" class = "error"></div>
+        <header>
+            <h1>${r.restName}</h1>
+        </header>
+        <div class = "card">
+            <input type = "param" id = "name" value = "${r.restName}">
+            <input type = "param" id = "desc" value = "${r.notes}">
+            <input type = "param" id = "direction" value = "${r.location}">
+            <input type = "param" id = "webpage" value = "${r.webpage}">
+        </div>
+        <div class = "card">
+            <button onclick = "saveEditRest(${tripId},${id})">Save Changes</button>
+        </div>
+        <div class = "card">
+            <button class = "delete" onclick = "deleteRest(${tripId},${id})">Delete</button>
+        </div>
+        <div class="card">
+            <button onclick="loadFoodPage(${tripId})">Back</button>
+        </div>
+    `;
+}
+
+async function saveEditRest(tripId, id) {
+    const name = document.getElementById("name").value;
+    const desc = document.getElementById("desc").value;
+    const dir = document.getElementById("direction").value;
+    const wbpg = document.getElementById("webpage").value;
+    if (!name || !desc || !dir) {
+        document.getElementById("error").innerHTML = '<h2>Please fill in name, description, and address</h2>';
+        return;
+    }
+    try {
+        const { lat, lng } = await coordsFromLink(dir);
+        const response = await (fetch(`/api/restaurants/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                restName: name,
+                notes: desc,
+                location: dir,
+                webpage: wbpg,
+                lat: lat,
+                lng: lng
+            })
+        }));
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || "Edit Restaurant Failed");
+        }
+        loadFoodPage(tripId);
+    }
+    catch (err) {
+        console.error("Failed to edit restaurant:", err);
+        document.getElementById("error").innerHTML = '<h2>Failed to edit Restaurant</h2>';
+    }
+}
+
+//Delete function for restaurants
+async function deleteRest(tripId, id) {
+    if (!confirm("Delete this restaurant?")) return;
+
+    try {
+        const response = await fetch(`/api/restaurants/${id}`, {
+            method: "DELETE"
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || "Restaurant delete failed");
+        }
+        loadFoodPage(tripId);
+    } catch (err) {
+        console.error("Failed to delete restaurant:", err);
+        document.getElementById("error").innerHTML = '<h2>Failed to delete Restaurant</h2>';
+    }
 }
 
 async function coordsFromLink(link) {
@@ -735,7 +881,7 @@ async function saveRestaurant(id) {
         if (!response.ok) {
             throw new Error(result.error || "Restaurant Creation Failed");
         }
-        tripPage();
+        loadFoodPage(id);
     }
     catch (err) {
         console.error("Failed to create restaurant:", err);
@@ -764,7 +910,7 @@ function show(value) {
 }
 
 function formatTimeString(timeString) {
-    if(!timeString) return "";
+    if (!timeString) return "";
     let [hours, minutes] = timeString.split(':');
     hours = parseInt(hours, 10);
     const period = hours >= 12 ? 'PM' : 'AM';
@@ -773,7 +919,7 @@ function formatTimeString(timeString) {
 }
 
 function formatTimeRange(start, end) {
-    if(!start && !end) return;
+    if (!start && !end) return "";
     const s = formatTimeString(start);
     const e = formatTimeString(end);
     if (s && e) return `${s} - ${e}`;
@@ -783,36 +929,93 @@ function formatTimeRange(start, end) {
 let currentTripId = null;
 let currentActivities = [];
 let drag = null;
+let scrollRaf = null;
+const EDGE = 90;
+const MAX_SPEED = 18;
 
-function zoneAt(x, y) {
-    return document.elementsFromPoint(x, y).find(n => n.classList.contains('dayDiv')) ?? null;
-}
-
-wraps.addEventListener('pointerdown', (e) => {
-    const handle = e.target.closest('.dragHandle');
-    if (!handle) return;
-    const el = handle.closest('.activity');
-    drag = { el, startX: e.clientX, startY: e.clientY, zone: null };
-    handle.setPointerCapture(e.pointerId);
-    el.classList.add('dragging');
-});
-
-wraps.addEventListener('pointermove', (e) => {
+function updateDrag() {
     if (!drag) return;
-    drag.el.style.transform = `translate(${e.clientX - drag.startX}px, ${e.clientY - drag.startY}px)`;
 
-    const zone = zoneAt(e.clientX, e.clientY);
+    // Include how far the page has scrolled since the drag began,
+    // otherwise the card drifts away from your finger while scrolling
+    const dx = drag.x - drag.startX;
+    const dy = drag.y - drag.startY + (window.scrollY - drag.startScroll);
+    drag.el.style.transform = `translate(${dx}px, ${dy}px)`;
+
+    const zone = zoneAt(drag.x, drag.y);
     if (zone !== drag.zone) {
         drag.zone?.classList.remove('over');
         zone?.classList.add('over');
         drag.zone = zone;
     }
+}
+
+function autoScroll() {
+    if (!drag) { scrollRaf = null; return; }
+
+    let speed = 0;
+    if (drag.y < EDGE) {
+        speed = -MAX_SPEED * Math.min(1, (EDGE - drag.y) / EDGE);
+    } else if (drag.y > window.innerHeight - EDGE) {
+        speed = MAX_SPEED * Math.min(1, (drag.y - (window.innerHeight - EDGE)) / EDGE);
+    }
+
+    if (speed) {
+        // scrollBy can round tiny values to 0, so force at least 1px
+        window.scrollBy(0, Math.sign(speed) * Math.max(1, Math.round(Math.abs(speed))));
+        updateDrag();   // re-check the drop zone even though the finger hasn't moved
+    }
+    scrollRaf = requestAnimationFrame(autoScroll);
+}
+
+function endDrag() {
+    cancelAnimationFrame(scrollRaf);
+    scrollRaf = null;
+    document.body.classList.remove('dragActive');
+}
+
+function zoneAt(x, y) {
+    return document.elementsFromPoint(x, y).find(n => n.classList.contains('dayDiv')) ?? null;
+}
+
+document.addEventListener('selectstart', (e) => {
+    if (drag) e.preventDefault();
+});
+
+wraps.addEventListener('pointerdown', (e) => {
+    const handle = e.target.closest('.dragHandle');
+    if (!handle) return;
+    const el = handle.closest('.activity');
+
+    drag = {
+        el,
+        startX: e.clientX,
+        startY: e.clientY,
+        startScroll: window.scrollY,
+        x: e.clientX,
+        y: e.clientY,
+        zone: null
+    };
+
+    handle.setPointerCapture(e.pointerId);
+    el.classList.add('dragging');
+    document.body.classList.add('dragActive');
+    window.getSelection()?.removeAllRanges();
+    scrollRaf = requestAnimationFrame(autoScroll);
+});
+
+wraps.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    drag.x = e.clientX;
+    drag.y = e.clientY;
+    updateDrag();
 });
 
 wraps.addEventListener('pointerup', async () => {
     if (!drag) return;
     const { el, zone } = drag;
     drag = null;
+    endDrag();
 
     el.classList.remove('dragging');
     el.style.transform = '';
@@ -833,6 +1036,7 @@ wraps.addEventListener('pointercancel', () => {
     drag.el.style.transform = '';
     drag.zone?.classList.remove('over');
     drag = null;
+    endDrag();
 });
 
 async function moveActivity(activityId, newDay) {
@@ -867,4 +1071,51 @@ function autoGrow(el) {
     el.style.height = el.scrollHeight + "px";
 }
 
-document.addEventListener("DOMContentLoaded", tripPage);
+let restoring = false;
+
+function trackPage(name) {
+    const original = window[name];
+
+    window[name] = function (...args) {
+        stopMapLocate();   // always shut down GPS/map when leaving the map page
+
+        if (!restoring) {
+            const state = {
+                page: name,
+                args: args.filter(a => ["string", "number", "boolean"].includes(typeof a))
+            };
+            const same = history.state &&
+                JSON.stringify(history.state) === JSON.stringify(state);
+
+            // First page load or a re-render of the same page: replace, don't stack
+            if (history.state === null || same) {
+                history.replaceState(state, "");
+            } else {
+                history.pushState(state, "");
+            }
+        }
+        return original.apply(this, args);
+    };
+}
+
+[
+    "tripPage", "setParams", "loadTripPage", "loadFoodPage",
+    "activityRestMap", "loadWishlist", "editDay", "editActivity",
+    "createActivity", "createRestaurant", "editRest"
+].forEach(trackPage);
+
+window.addEventListener("popstate", async (e) => {
+    restoring = true;
+    try {
+        const s = e.state;
+        if (s && typeof window[s.page] === "function") {
+            await window[s.page](...s.args);
+        } else {
+            await tripPage();
+        }
+    } finally {
+        restoring = false;
+    }
+});
+
+document.addEventListener("DOMContentLoaded", () => tripPage());

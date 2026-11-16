@@ -360,7 +360,7 @@ app.put('/api/activities/:activityId', async (req, res, next) => {
                 activityName,
                 notes || null,
                 location || null,
-                cost === '' || cost == null ? 0 : cost,
+                cost === '' || cost == null ? null : cost,
                 startTime || null,
                 endTime || null,
                 lat,
@@ -376,6 +376,36 @@ app.put('/api/activities/:activityId', async (req, res, next) => {
     } catch (err) {
         next(err);
     }
+});
+
+app.put(`/api/restaurants/:id`, async (req,res,next) => {
+    const {id} = req.params;
+    const {restName, notes, location, webpage, lat, lng} = req.body;
+
+    try {
+        const [result] = await pool.query(
+            `UPDATE restaurants
+             SET restName = ?, notes = ?, location = ?, webpage = ?, lat = ?, lng = ?
+             WHERE id = ?`,
+            [
+                restName,
+                notes,
+                location,
+                webpage,
+                lat,
+                lng,
+                id
+            ]
+        );
+ 
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Restaurant not found' });
+        }
+        res.json({ success: true });
+    } catch (err) {
+        next(err);
+    }
+
 });
  
 app.post(`/api/restaurants`, async(req,res,next) => {
@@ -422,7 +452,7 @@ app.post('/api/activities', async (req, res, next) => {
                 activityName,
                 notes || null,
                 location || null,
-                cost === '' || cost == null ? 0 : cost,
+                cost === '' || cost == null ? null : cost,
                 startTime || null,
                 endTime || null,
                 lat,
@@ -486,6 +516,24 @@ app.delete('/api/Trips/:id', async (req, res, next) => {
         next(err);
     }
 })
+
+app.delete(`/api/restaurants/:id`, async (req,res,next) => {
+    try{
+        const {id} = req.params;
+        const [result] = await pool.query(`DELETE FROM restaurants WHERE id = ?`, [id]);
+
+        if(result.affectedRows === 0)
+        {
+            return res.status(404).json({ error: `Restaurant not found`});
+        }
+
+        res.json({ message: 'Restaurant Deleted', id});
+    }
+    catch(err)
+    {
+        next(err);
+    }
+});
  
 app.delete('/api/activities/:activityId', async (req, res, next) => {
     try {

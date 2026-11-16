@@ -1,381 +1,413 @@
-
 @import url('https://googleapis.com');
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f8f8;
-            color: #222;
-        }
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f8f8;
+    color: #222;
+}
 
-        /* Main app screen */
-        .app {
-            width: 100%;
-            max-width: 480px;
-            min-height: 100dvh;
-            margin: 0 auto;
-            background-color: white;
-            display: flex;
-            flex-direction: column;
-        }
+/* Main app screen */
+.app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100dvh;
+    margin: 0 auto;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+}
 
-        /* Header */
-        header {
-            background-color: #f3812a;
-            color: #f8f8f8;
-            padding: 20px;
-            text-align: center;
-        }
+/* Header */
+header {
+    background-color: #f3812a;
+    color: #f8f8f8;
+    padding: 20px;
+    text-align: center;
+}
 
-        header h1 {
-            font-size: 24px;
-            font-family: 'Lexend', sans-serif;
-            text-align: center;
-            margin-top: 2px;
-        }
+header h1 {
+    font-size: 24px;
+    font-family: 'Lexend', sans-serif;
+    text-align: center;
+    margin-top: 2px;
+}
 
-        header h2 {
-            background-color: rgba(253, 0, 0, 0.413);
-            color: rgb(0, 0, 0);
-            font-size: 15px;
-            text-align: center;
-        }
+header h2 {
+    background-color: rgba(253, 0, 0, 0.413);
+    color: rgb(0, 0, 0);
+    font-size: 15px;
+    text-align: center;
+}
 
-        /* Main content */
-        main {
-            flex: 1;
-            padding: 20px;
-        }
+/* Main content */
+main {
+    flex: 1;
+    padding: 20px;
+}
 
-        .card {
-            background-color: #72b6d157;
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 2px 5px #00000010;
-        }
+.card {
+    background-color: #72b6d157;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 5px #00000010;
+}
 
-        .restCard{
-            background-color: #f8f8f8;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 5px #00000010;
-            display: inline-block;
-            vertical-align: top;
-            width: 100%;
-            min-height: 160px;
-            padding: 10px;
-            border: 2px solid #d2d9db;
-            border-radius: 8px;
-        }
+.restCard {
+    background-color: #f8f8f8;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 5px #00000010;
+    display: inline-block;
+    vertical-align: top;
+    width: 100%;
+    min-height: 160px;
+    padding: 10px;
+    border: 2px solid #d2d9db;
+    border-radius: 8px;
+}
 
-        .wrapper{
-            flex: 1;
-            background-color: #f8f8f8;
-        }
+.wrapper {
+    flex: 1;
+    background-color: #f8f8f8;
+}
 
-        .headerDiv {
-            background-color: #f8f8f8;
-            border-radius: 6px;
-            padding: 16px;
-            margin-bottom: 3px;
-            box-shadow: 0 2px 5px #00000010;
-            display: grid;
-            grid-auto-flow: row;
-        }
+.headerDiv {
+    background-color: #f8f8f8;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 3px;
+    box-shadow: 0 2px 5px #00000010;
+    display: grid;
+    grid-auto-flow: row;
+}
 
-        .dayDiv {
-            background-color: #f8f8f8;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 5px #00000010;
-            display: inline-block;
-            vertical-align: top;
-            width: 100%;
-            min-height: 160px;
-            padding: 10px;
-            border: 2px solid #d2d9db;
-            border-radius: 8px;
-        }
+.dayDiv {
+    background-color: #f8f8f8;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 5px #00000010;
+    display: inline-block;
+    vertical-align: top;
+    width: 100%;
+    min-height: 160px;
+    padding: 10px;
+    border: 2px solid #d2d9db;
+    border-radius: 8px;
+}
 
-        .dayDiv.over {
-            background: #eef4ff;
-            border-color: #7a9e9f;
-        }
+.dayDiv.over {
+    background: #eef4ff;
+    border-color: #7a9e9f;
+}
 
-        .dayHeaderDiv {
-            background-color: #ffffff;
-            border-color: #ef9690;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 5px #00000010;
-            display: grid;
-            grid-auto-flow: column;
-        }
+.dayHeaderDiv {
+    background-color: #ffffff;
+    border-color: #ef9690;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 5px #00000010;
+    display: grid;
+    grid-auto-flow: column;
+}
 
-        .activity {
-            position: relative;
-            background-color: #f8e1cc;
-            border-radius: 12px;
-            padding: 5px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 5px #00000010;
-        }
+.activity {
+    position: relative;
+    background-color: #f8e1cc;
+    border-radius: 12px;
+    padding: 5px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 5px #00000010;
+}
 
-        .activity.dragging {
-            z-index: 1000;
-            opacity: 0.9;
-            box-shadow: 0 6px 16px #00000040;
-        }
+.activity.dragging {
+    z-index: 1000;
+    opacity: 0.9;
+    box-shadow: 0 6px 16px #00000040;
+}
 
-        .dragHandle {
-            cursor: grab;
-            user-select: none;
-            touch-action: none;
-            /* lets touch drag here without scrolling the page */
-            font-size: 20px;
-            text-align: right;
-            color: #666;
+.dragHandle {
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    /* lets touch drag here without scrolling the page */
+    font-size: 20px;
+    text-align: right;
+    color: #666;
 
-        }
+}
 
-        .activity.dragging {
-            opacity: 0.4;
-        }
+.activity.dragging {
+    opacity: 0.4;
+}
 
-        .activeDiv {
-            background-color: #f8f8f8;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 5px #00000010;
-        }
+.activeDiv {
+    background-color: #f8f8f8;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 5px #00000010;
+}
 
-        .button-card {
-            text-align: center;
-        }
+.button-card {
+    text-align: center;
+}
 
-        .delete {
-            width: 100%;
-            padding: 14px;
-            margin-top: 12px;
-            border: none;
-            border-radius: 8px;
-            background-color: #eb513d;
-            color: rgb(255, 255, 255);
-            font-size: 12px;
-            cursor: pointer;
-        }
+.delete {
+    width: 100%;
+    padding: 14px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: #eb513d;
+    color: rgb(255, 255, 255);
+    font-size: 12px;
+    cursor: pointer;
+}
 
-        .dashboard {
-            background-color: #f8f8f8;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 5px #00000010;
-        }
+.dashboard {
+    background-color: #f8f8f8;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 5px #00000010;
+}
 
-        input[type="search"] {
-            width: 100%;
-            box-sizing: border-box;
-            border-radius: 50px;
+input[type="search"] {
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 50px;
 
-            border: 1px solid #ccc;
-            padding: 10px 20px;
-            outline: none;
-        }
+    border: 1px solid #ccc;
+    padding: 10px 20px;
+    outline: none;
+}
 
-        input[type="search"]::placeholder {
-            text-align: center;
-        }
+input[type="search"]::placeholder {
+    text-align: center;
+}
 
-        input[type="param"] {
-            width: 100%;
-            box-sizing: border-box;
-            border-radius: 50px;
-            border: 1px solid #ccc;
-            padding: 10px 20px;
-            outline: none;
-            margin-top: 3px;
-            margin-bottom: 3px;
-        }
+input[type="param"] {
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 50px;
+    border: 1px solid #ccc;
+    padding: 10px 20px;
+    outline: none;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
 
-        input[type="date"] {
-            width: 100%;
-            box-sizing: border-box;
-            border-radius: 50px;
-            border: 1px solid #ccc;
-            padding: 10px 20px;
-            outline: none;
-            margin-top: 3px;
-            margin-bottom: 3px;
-        }
+input[type="date"],
+input[type="time"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    border-radius: 50px;
+    border: 1px solid #ccc;
+    padding: 10px 20px;
+    outline: none;
+    margin-top: 3px;
+    margin-bottom: 3px;
+    font-size: 16px;
+    min-height: 44px;
+    display: block;
+}
 
-        input[type="time"] {
-            width: 100%;
-            box-sizing: border-box;
-            border-radius: 50px;
-            border: 1px solid #ccc;
-            padding: 10px 20px;
-            outline: none;
-            margin-top: 3px;
-            margin-bottom: 3px;
-        }
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value {
+    text-align: left;
+    min-width: 0;
+}
 
-        input[type="param"]::placeholder {
-            text-align: center;
-        }
+input[type="date"]:invalid::before,
+input[type="time"]:invalid::before {
+    content: attr(data-placeholder);
+    color: #999;
+}
 
-        .card h2 {
-            margin-bottom: 10px;
-            font-size: 18px;
-        }
+input[type="date"]:invalid::-webkit-datetime-edit,
+input[type="time"]:invalid::-webkit-datetime-edit {
+    display: none;
+}
 
-        .card p {
-            color: #666;
-            line-height: 1.5;
-        }
+input[type="param"]::placeholder {
+    text-align: center;
+}
 
-        button {
-            width: 100%;
-            padding: 14px;
-            margin-top: 2px;
-            border: none;
-            border-radius: 8px;
-            background-color: #f3812a;
-            color: #f8f8f8;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+.card h2 {
+    margin-bottom: 10px;
+    font-size: 18px;
+}
 
-        .editBtn {
-            width: 50%;
-            padding: 14px;
-            margin-top: 2px;
-            border: none;
-            border-radius: 8px;
-            background-color: #f3812a;
-            color: #f8f8f8;
-            font-size: 15px;
-            cursor: pointer;
-        }
+.card p {
+    color: #666;
+    line-height: 1.5;
+}
 
-        .linkBtn {
-            width: 40%;
-            padding: 14px;
-            margin-top: 2px;
-            border: none;
-            border-radius: 8px;
-            background-color: #f3812a;
-            color: #f8f8f8;
-            font-size: 15px;
-            cursor: pointer;
-        }
+button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 2px;
+    border: none;
+    border-radius: 8px;
+    background-color: #f3812a;
+    color: #f8f8f8;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
 
-        /* Bottom navigation */
-        nav {
-            display: flex;
-            justify-content: space-around;
-            padding: 14px 5px;
-            background-color: white;
-            border-top: 1px solid #ddd;
-            position: sticky;
-            bottom: 0;
-        }
+.editBtn {
+    width: 50%;
+    padding: 14px;
+    margin-top: 2px;
+    border: none;
+    border-radius: 8px;
+    background-color: #f3812a;
+    color: #f8f8f8;
+    font-size: 15px;
+    cursor: pointer;
+}
 
-        nav a {
-            text-decoration: none;
-            color: #555;
-            font-size: 13px;
-            text-align: center;
-            padding: 5px;
-        }
+.linkBtn {
+    width: 40%;
+    padding: 14px;
+    margin-top: 2px;
+    border: none;
+    border-radius: 8px;
+    background-color: #f3812a;
+    color: #f8f8f8;
+    font-size: 15px;
+    cursor: pointer;
+}
 
-        nav a.active {
-            color: #0a5a2e;
-            font-weight: bold;
-        }
+body.dragActive {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;   /* stops the iOS long-press callout */
+}
 
-        #map {
-            position: fixed;
-            inset: 0;
-            /* top/right/bottom/left = 0 */
-            height: 100dvh;
-            /* dvh handles mobile browser toolbars */
-            width: 100vw;
-        }
+/* Bottom navigation */
+nav {
+    display: flex;
+    justify-content: space-around;
+    padding: 14px 5px;
+    background-color: white;
+    border-top: 1px solid #ddd;
+    position: sticky;
+    bottom: 0;
+}
 
-        .mapBack {
-            background-color: #f3812a;
-            position: fixed;
-            top: 12px;
-            left: 12px;
-            z-index: 1100;
-            width: auto;
-            min-width: 0;
-            max-width: calc(100vw - 24px);
-            box-sizing: border-box;
-            margin: 0;
-            padding: 8px 16px;
-        }
+nav a {
+    text-decoration: none;
+    color: #555;
+    font-size: 13px;
+    text-align: center;
+    padding: 5px;
+}
 
-        .mapError {
-            position: fixed;
-            top: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1100;
-        }
+nav a.active {
+    color: #0a5a2e;
+    font-weight: bold;
+}
 
-        .leaflet-popup-content .linkBtn {
-            width: auto;
-            min-width: 0;
-            display: inline-block;
-            white-space: nowrap;
-            padding: 8px 14px;
-            margin: 6px 4px 0 0;
-            font-size: 14px;
-        }
+#map {
+    position: fixed;
+    inset: 0;
+    /* top/right/bottom/left = 0 */
+    height: 100dvh;
+    /* dvh handles mobile browser toolbars */
+    width: 100vw;
+}
 
-        .wishlistPage {
-            display: flex;
-            flex-direction: column;
-            min-height: 100dvh;
-        }
+.mapBack {
+    background-color: #f3812a;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 1100;
+    width: auto;
+    min-width: 0;
+    max-width: calc(100vw - 24px);
+    box-sizing: border-box;
+    margin: 0;
+    padding: 8px 16px;
+}
 
-        .wishlistCard {
-            flex: 1;
-            /* takes all leftover vertical space */
-            display: flex;
-            margin: 16px 20px 0;
-        }
+.mapError {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1100;
+}
 
-        .wishlistCard textarea {
-            flex: 1;
-            /* fills the card */
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid #ccc;
-            border-radius: 12px;
-            font-family: inherit;
-            font-size: 16px;
-            line-height: 1.5;
-            outline: none;
-            resize: none;
-        }
+.mapFit {
+    left: auto;
+    right: 12px;
+}
 
-        .wishlistCard textarea:focus {
-            border-color: #ef9690;
-        }
+.youMarker {
+    background: #2a7de1;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #2a7de1, 0 2px 6px #00000060;
+}
 
-        .wishlistActions {
-            margin: 16px 20px;
-        }
+.leaflet-popup-content .linkBtn {
+    width: auto;
+    min-width: 0;
+    display: inline-block;
+    white-space: nowrap;
+    padding: 8px 14px;
+    margin: 6px 4px 0 0;
+    font-size: 14px;
+}
+
+.wishlistPage {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+}
+
+.wishlistCard {
+    flex: 1;
+    /* takes all leftover vertical space */
+    display: flex;
+    margin: 16px 20px 0;
+}
+
+.wishlistCard textarea {
+    flex: 1;
+    /* fills the card */
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.5;
+    outline: none;
+    resize: none;
+}
+
+.wishlistCard textarea:focus {
+    border-color: #ef9690;
+}
+
+.wishlistActions {
+    margin: 16px 20px;
+}
