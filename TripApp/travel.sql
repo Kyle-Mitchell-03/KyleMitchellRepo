@@ -20,7 +20,6 @@ CREATE TABLE days (
     dayDate DATE NOT NULL,
     notes TEXT,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
     FOREIGN KEY (tripID) REFERENCES Trips(id) ON DELETE CASCADE,
     UNIQUE KEY uniqueTripDay (tripID,dayNumber)
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -50,7 +49,6 @@ CREATE TABLE activities (
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     lat DOUBLE,
     lng DOUBLE,
-
     FOREIGN KEY (dayID) REFERENCES days(id) ON DELETE CASCADE,
     FOREIGN KEY (tripId) REFERENCES Trips(id) ON DELETE CASCADE,
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

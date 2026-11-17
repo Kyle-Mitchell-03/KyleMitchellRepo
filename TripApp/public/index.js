@@ -4,9 +4,8 @@ const tripDiv = document.getElementById("trips");
 let tripList = [];
 let activeMap = null;
 
-
-
-async function tripPage() {
+async function tripPage() 
+{
     wraps.innerHTML = `
             <div id="error" class="error"></div>
             <header>
@@ -19,13 +18,13 @@ async function tripPage() {
                 <button onclick="setParams()">Create Trip</button>
             </div>
     `;
-
     const tripDiv = document.getElementById("trips");
     const errorDiv = document.getElementById("error");
-
-    try {
+    try 
+    {
         const response = await fetch("/api/Trips");
-        if (!response.ok) {
+        if(!response.ok) 
+        {
             throw new Error(`Server returned ${response.status}`);
         }
         const tripList = await response.json();
@@ -33,13 +32,16 @@ async function tripPage() {
                                                     <button id = "tripButton" onclick = "loadTripPage(${t.id})">${t.Title}</button>
                                                     <button class = "delete" id = "delTrip" onclick = "deleteTrip(${t.id})">Delete</button>
                                                 `).join("");
-    } catch (err) {
+    } 
+    catch(err) 
+    {
         console.log("Failed to load Trips:", err);
         errorDiv.innerHTML = `<h2>Failed to load Trips</h2>`;
     }
 }
 
-async function setParams() {
+async function setParams() 
+{
     wraps.innerHTML = `
         <main>
             <header>
@@ -64,16 +66,18 @@ async function setParams() {
     `;
 }
 
-async function createTrip() {
+async function createTrip() 
+{
     const name = document.getElementById("name").value;
     const startdate = document.getElementById("Startdate").value;
     const enddate = document.getElementById("Enddate").value;
-
-    if (!name || !startdate || !enddate) {
+    if(!name || !startdate || !enddate) 
+    {
         document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
         return;
     }
-    try {
+    try
+    {
         const response = await (fetch("/api/Trips", {
             method: "POST",
             headers: {
@@ -87,12 +91,14 @@ async function createTrip() {
             })
         }));
         const result = await response.json();
-        if (!response.ok) {
+        if(!response.ok) 
+        {
             throw new Error(result.error || "Creation Failed");
         }
         tripPage();
     }
-    catch (err) {
+    catch(err) 
+    {
         console.error("Failed to add trip:", err);
         wraps.innerHTML = `
         <main>
@@ -121,67 +127,84 @@ async function createTrip() {
     }
 }
 
-async function saveNotes(tripId, dayNumber) {
+async function saveNotes(tripId, dayNumber) 
+{
     const notesInp = document.getElementById("note").value;
     const errorDiv = document.getElementById("error");
-
-    try {
+    try 
+    {
         const response = await fetch(`/api/Trips/${tripId}/days/${dayNumber}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ notes: notesInp })
         });
         const result = await response.json();
-        if (!response.ok) {
+        if(!response.ok) 
+        {
             throw new Error(result.error || "Note save failed");
         }
         loadTripPage(tripId);
-    } catch (err) {
+    } 
+    catch(err) 
+    {
         console.error("Failed to save notes:", err);
         errorDiv.innerHTML = `<header><h2>Failed to save notes</h2></header>`;
     }
 }
 
-async function pullDay(tripId, dayNumber) {
+async function pullDay(tripId, dayNumber) 
+{
     let day;
-    try {
+    try 
+    {
         const response = await fetch(`/api/Trips/${tripId}/days/${dayNumber}`);
-        if (!response.ok) {
+        if(!response.ok) 
+        {
             throw new Error(`Server returned ${response.status}`);
         }
         day = await response.json();
     }
-    catch (err) {
+    catch(err) 
+    {
         console.log("Failed to load single day: ", err);
     }
     return day;
 }
 
-async function fetchDays(id) {
+async function fetchDays(id) 
+{
     let dayList = [];
-    try {
+    try 
+    {
         const response = await fetch(`/api/days/${id}`);
-        if (!response.ok) {
+        if(!response.ok) 
+        {
             throw new Error(`Server returned ${response.status}`);
         }
         dayList = await response.json();
         console.log(dayList);
-    } catch (err) {
+    } 
+    catch(err) 
+    {
         console.log("Failed to load Days:", err);
     }
     return dayList;
 }
 
-async function fetchTrip(id) {
+async function fetchTrip(id) 
+{
     let trip = "";
-    try {
+    try 
+    {
         const response = await fetch(`/api/Trips/${id}`);
-        if (!response.ok) {
+        if(!response.ok) 
+        {
             throw new Error(`Server returned ${response.status}`);
         }
         trip = await response.json();
     }
-    catch (err) {
+    catch(err) 
+    {
         console.log("Failed to load Trip: ", err);
         const errorDiv = document.getElementById("error");
         errorDiv.innerHTML = `<h2> Failed to load Trip </h2>`
@@ -189,16 +212,20 @@ async function fetchTrip(id) {
     return trip;
 }
 
-async function fetchActivities(id) {
+async function fetchActivities(id) 
+{
     let activ = [];
-    try {
+    try 
+    {
         const response = await fetch(`/api/activities/${id}`);
-        if (!response.ok) {
+        if(!response.ok) 
+        {
             throw new Error(`Server returned ${response.status}`);
         }
         activ = await response.json();
     }
-    catch (err) {
+    catch(err) 
+    {
         console.log("Failed to load Activities: ", err);
         const errorDiv = document.getElementById("error");
         errorDiv.innerHTML = `<h2>Failed to load activities</h2>`
@@ -206,16 +233,20 @@ async function fetchActivities(id) {
     return activ;
 }
 
-async function fetchRestaurants(id) {
+async function fetchRestaurants(id) 
+{
     let rests = [];
-    try {
+    try
+    {
         const response = await fetch(`/api/restaurants/${id}`);
-        if (!response.ok) {
+        if(!response.ok) 
+        {
             throw new Error(`Server returned ${response.status}`);
         }
         rests = await response.json();
     }
-    catch (err) {
+    catch(err) 
+    {
         console.log("Failed to load restuarants: ", err);
         const errorDiv = document.getElementById("error");
         errorDiv.innerHTML = `<h2>Failed to load activities</h2>`
@@ -223,9 +254,11 @@ async function fetchRestaurants(id) {
     return rests;
 }
 
-async function getCurrentLocation() {
+async function getCurrentLocation() 
+{
     return new Promise((resolve, reject) => {
-        if (!navigator.geolocation) {
+        if(!navigator.geolocation) 
+        {
             reject(new Error("Geolocation is not supported by this browser"));
             return;
         }
@@ -244,7 +277,8 @@ async function getCurrentLocation() {
     });
 }
 
-async function loadFoodPage(id) {
+async function loadFoodPage(id) 
+{
     wraps.innerHTML = `<div id = "error" class = "error"></div>
         <header>
             <h1> Restaurants </h1>
@@ -259,11 +293,11 @@ async function loadFoodPage(id) {
         `;
 
     const errorDiv = document.getElementById("error");
-    try {
+    try 
+    {
         const rests = await fetchRestaurants(id);
         const me = await getCurrentLocation();
         const sorted = sortByCloseness(me.lat, me.lng, rests);
-
         document.getElementById("rests").innerHTML = sorted.map(r => `
             <div class="restCard">
                 <h3>${r.restName}</h3>
@@ -274,24 +308,32 @@ async function loadFoodPage(id) {
                 <button class = "delete" onclick = "editRest(${id}, ${r.id})">Edit</button>
             </div>
         `).join("");
-    } catch (err) {
-        if (err.code === 1) {
+    } 
+    catch(err) 
+    {
+        if(err.code === 1) 
+        {
             errorDiv.innerHTML = "<h2>Location permission denied</h2>";
-        } else {
+        } 
+        else 
+        {
             errorDiv.innerHTML = "<h2>Could not get your location</h2>";
         }
     }
 }
 
-function stopMapLocate() {
-    if (activeMap) {
+function stopMapLocate() 
+{
+    if(activeMap) 
+    {
         activeMap.stopLocate();
         activeMap.remove();
         activeMap = null;
     }
 }
 
-async function activityRestMap(id) {
+async function activityRestMap(id) 
+{
     wraps.innerHTML = `
         <div id="map"></div>
         <button class="mapBack" onclick="stopMapLocate(); loadTripPage(${id})">Back</button>
@@ -342,15 +384,14 @@ async function activityRestMap(id) {
             );
         });
 
-    // Used by the "All pins" button and as the fallback if location fails
     const fitPins = () => {
-        if (markers.length) {
+        if(markers.length) 
+        {
             map.fitBounds(L.featureGroup(markers).getBounds().pad(0.2));
         }
     };
     window.fitAll = fitPins;
 
-    // ---- Your location ----
     const youIcon = L.divIcon({
         className: 'youMarker',
         iconSize: [18, 18],
@@ -359,37 +400,39 @@ async function activityRestMap(id) {
 
     let youMarker = null;
     let youAccuracy = null;
-    let centered = false;     // true once we've jumped to your first fix
-    let fellBack = false;     // true once we've shown the pins because location failed
+    let centered = false;
+    let fellBack = false;
     const noPins = markers.length === 0;
 
-    // Status message while waiting for the first fix
     errorDiv.innerHTML = noPins
         ? "<h2>No locations with coordinates yet!</h2>"
         : "<h2>Finding you...</h2>";
 
     map.on('locationfound', e => {
-        if (!youMarker) {
+        if(!youMarker) 
+        {
             youMarker = L.marker(e.latlng, { icon: youIcon, zIndexOffset: 1000 })
                 .addTo(map)
                 .bindPopup("You are here");
             youAccuracy = L.circle(e.latlng, { radius: e.accuracy, color: '#2a7de1', weight: 1, fillOpacity: 0.1 })
                 .addTo(map);
-        } else {
+        }
+        else 
+        {
             youMarker.setLatLng(e.latlng);
             youAccuracy.setLatLng(e.latlng).setRadius(e.accuracy);
         }
 
-        if (!centered) {
+        if(!centered) 
+        {
             centered = true;
             map.setView(e.latlng, 15);
-            if (!noPins) errorDiv.innerHTML = "";   // clear "Finding you..."
+            if (!noPins) errorDiv.innerHTML = "";
         }
     });
 
     map.on('locationerror', () => {
         console.warn("Couldn't get your location");
-        // Only fall back once, and never after we've already centered on you
         if (centered || fellBack) return;
         fellBack = true;
         if (!noPins) errorDiv.innerHTML = "";
@@ -399,7 +442,8 @@ async function activityRestMap(id) {
     map.locate({ watch: true, enableHighAccuracy: true });
 }
 
-async function loadTripPage(id) {
+async function loadTripPage(id) 
+{
     const trip = await fetchTrip(id);
     wraps.innerHTML = `
         <div id = "error" class = "error"></div>
@@ -429,10 +473,12 @@ async function loadTripPage(id) {
     currentTripId = id;
     currentActivities = activities;
 
-    if (!days || days.length == 0) {
+    if(!days || days.length == 0) 
+    {
         dayDiv.innerHTML = `<p>No days for this trip yet</p>`;
     }
-    else {
+    else 
+    {
         dayDiv.innerHTML = days.map(d => {
             const dayActivities = activities.filter(a => a.dayID === d.id);
             const activitiesHTML = dayActivities.map(a => `
@@ -462,25 +508,29 @@ async function loadTripPage(id) {
     }
 }
 
-async function deleteTrip(id) {
-    if (!confirm("Delete this Trip?")) return;
+async function deleteTrip(id) 
+{
+    if(!confirm("Delete this Trip?")) return;
 
-    try {
+    try 
+    {
         const response = await fetch(`/api/Trips/${id}`, {
             method: "DELETE"
         });
-
-        if (!response.ok) {
+        if(!response.ok) 
+        {
             throw new Error(`Delete Failed: ${response.status}`)
         }
     }
-    catch (err) {
+    catch(err) 
+    {
         console.error("Failed to delete Trip:", err);
     }
     tripPage();
 }
 
-async function loadWishlist(id) {
+async function loadWishlist(id) 
+{
     const trip = await fetchTrip(id);
     wraps.innerHTML = `
         <div class="wishlistPage">
@@ -501,13 +551,16 @@ async function loadWishlist(id) {
     `;
 }
 
-async function saveWishlistChanges(id) {
+async function saveWishlistChanges(id) 
+{
     const wishlist = document.getElementById("wishlist").value;
-    if (!wishlist) {
+    if(!wishlist) 
+    {
         document.getElementById("error").innerHTML = '<h2>Please fill in the wishlist</h2>';
         return;
     }
-    try {
+    try 
+    {
         const response = await (fetch(`/api/Trips/${id}`, {
             method: "PUT",
             headers: {
@@ -519,18 +572,21 @@ async function saveWishlistChanges(id) {
             })
         }));
         const result = await response.json();
-        if (!response.ok) {
+        if(!response.ok) 
+        {
             throw new Error(result.error || "Wishlist Save Failed");
         }
         loadTripPage(id);
     }
-    catch (err) {
+    catch(err) 
+    {
         console.error("Failed to save wishlist:", err);
         document.getElementById("error").innerHTML = '<h2>Failed to save Wishlist</h2>';
     }
 }
 
-async function editDay(tripId, dayNumber) {
+async function editDay(tripId, dayNumber) 
+{
     const day = await pullDay(tripId, dayNumber);
     wraps.innerHTML = `
         <div id = "error" class = "error"></div>
@@ -566,11 +622,13 @@ async function editDay(tripId, dayNumber) {
 
 }
 
-async function editActivity(tripId, dayNumber, activityId) {
+async function editActivity(tripId, dayNumber, activityId) 
+{
     const activs = await fetchActivities(tripId);
     const day = await pullDay(tripId, dayNumber);
     const a = activs.find(a => a.id === activityId && a.dayID === day?.id);
-    if (!a) {
+    if(!a) 
+    {
         editDay(tripId, dayNumber);
         return;
     }
@@ -581,7 +639,7 @@ async function editActivity(tripId, dayNumber, activityId) {
         </header>
         <div class = "card">
             <input type = "param" id = "title" value = "${a?.activityName}">
-            <input type = "param" id = "desc" value = "${a?.notes}">
+            <input type = "param" id = "desc" value = "${show(a?.notes)}">
             <input type = "param" id = "direction" value = "${a?.location}">
             <input type = "param" id = "cost" value = "${show(a?.cost)}">
             <input type = "time" id = "startTime" data-placeholder = " Start Time - 00:00" value = "${show(a?.startTime || "")}">
@@ -599,7 +657,8 @@ async function editActivity(tripId, dayNumber, activityId) {
     `;
 }
 
-async function saveEditActivity(tripId, dayNumber, activityId) {
+async function saveEditActivity(tripId, dayNumber, activityId) 
+{
     const activTitle = document.getElementById("title").value;
     const activDesc = document.getElementById("desc").value;
     const activDir = document.getElementById("direction").value;
@@ -607,11 +666,13 @@ async function saveEditActivity(tripId, dayNumber, activityId) {
     const activST = document.getElementById("startTime").value;
     const activET = document.getElementById("endTime").value;
     const day = await pullDay(tripId, dayNumber);
-    if (!activTitle || !activDesc || !activDir) {
+    if(!activTitle || !activDesc || !activDir) 
+    {
         document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
         return;
     }
-    try {
+    try 
+    {
         const { lat, lng } = await coordsFromLink(activDir);
         const response = await (fetch(`/api/activities/${activityId}`, {
             method: "PUT",
@@ -633,39 +694,46 @@ async function saveEditActivity(tripId, dayNumber, activityId) {
             })
         }));
         const result = await response.json();
-        if (!response.ok) {
+        if(!response.ok) 
+        {
             throw new Error(result.error || "Activity Save Failed");
         }
         loadTripPage(tripId);
     }
-    catch (err) {
+    catch(err)
+    {
         console.error("Failed to save activity:", err);
         document.getElementById("error").innerHTML = '<h2>Failed to save Activity</h2>';
     }
 
 }
 
-async function deleteActivity(tripId, dayNumber, activityId) {
-    if (!confirm("Delete this activity?")) return;
+async function deleteActivity(tripId, dayNumber, activityId) 
+{
+    if(!confirm("Delete this activity?")) return;
 
-    try {
+    try 
+    {
         const response = await fetch(`/api/activities/${activityId}`, {
             method: "DELETE"
         });
         const result = await response.json();
-        if (!response.ok) {
+        if(!response.ok) 
+        {
             throw new Error(result.error || "Activity delete failed");
         }
         editDay(tripId, dayNumber);
-    } catch (err) {
+    } 
+    catch(err) 
+    {
         console.error("Failed to delete activity:", err);
         document.getElementById("error").innerHTML = '<h2>Failed to delete Activity</h2>';
     }
 }
 
-async function createActivity(tripId, dayNumber) {
+async function createActivity(tripId, dayNumber) 
+{
     const day = await pullDay(tripId, dayNumber);
-    const activs = await fetchActivities(tripId);
     wraps.innerHTML = `
         <div id = "error" class = "error"></div>
         <header>
@@ -680,7 +748,7 @@ async function createActivity(tripId, dayNumber) {
             <input type = "time" id = "endTime" data-placeholder = "End Time - 00:00" required>
         </div>
         <div class = "card">
-            <button onclick = saveActivity(${tripId},${dayNumber})>Create Activity</button>
+            <button onclick = "saveActivity(${tripId},${dayNumber})">Create Activity</button>
         </div>
         <div class="card">
             <button onclick="loadTripPage(${tripId})">Back</button>
@@ -688,9 +756,11 @@ async function createActivity(tripId, dayNumber) {
     `;
 }
 
-async function saveActivity(tripId, dayNumber) {
+async function saveActivity(tripId, dayNumber) 
+{
     const day = await pullDay(tripId, dayNumber);
-    if (!day) {
+    if(!day) 
+    {
         document.getElementById("error").innerHTML = '<h2>Day not found</h2>';
         return;
     }
@@ -700,11 +770,13 @@ async function saveActivity(tripId, dayNumber) {
     const activCost = document.getElementById("cost").value;
     const activST = document.getElementById("startTime").value;
     const activET = document.getElementById("endTime").value;
-    if (!activTitle || !activDesc || !activDir) {
+    if(!activTitle || !activDesc || !activDir) 
+    {
         document.getElementById("error").innerHTML = '<h2>Please fill in all fields</h2>';
         return;
     }
-    try {
+    try 
+    {
         const { lat, lng } = await coordsFromLink(activDir);
         const response = await (fetch("/api/activities", {
             method: "POST",
@@ -726,18 +798,21 @@ async function saveActivity(tripId, dayNumber) {
             })
         }));
         const result = await response.json();
-        if (!response.ok) {
+        if(!response.ok) 
+        {
             throw new Error(result.error || "Activity Creation Failed");
         }
         tripPage();
     }
-    catch (err) {
+    catch(err) 
+    {
         console.error("Failed to create activity:", err);
         document.getElementById("error").innerHTML = '<h2>Failed to create Activity</h2>';
     }
 }
 
-async function createRestaurant(id) {
+async function createRestaurant(id) 
+{
     wraps.innerHTML = `
         <div id = "error" class = "error"></div>
         <header>
@@ -758,10 +833,12 @@ async function createRestaurant(id) {
     `;
 }
 
-async function editRest(tripId, id) {
+async function editRest(tripId, id) 
+{
     const rests = await fetchRestaurants(tripId);
     const r = rests.find(r => r.id === id);
-    if (!r) {
+    if(!r) 
+    {
         loadFoodPage(tripId);
         return;
     }
@@ -774,7 +851,7 @@ async function editRest(tripId, id) {
             <input type = "param" id = "name" value = "${r.restName}">
             <input type = "param" id = "desc" value = "${r.notes}">
             <input type = "param" id = "direction" value = "${r.location}">
-            <input type = "param" id = "webpage" value = "${r.webpage}">
+            <input type = "param" id = "webpage" value = "${show(r.webpage)}">
         </div>
         <div class = "card">
             <button onclick = "saveEditRest(${tripId},${id})">Save Changes</button>
@@ -788,16 +865,19 @@ async function editRest(tripId, id) {
     `;
 }
 
-async function saveEditRest(tripId, id) {
+async function saveEditRest(tripId, id) 
+{
     const name = document.getElementById("name").value;
     const desc = document.getElementById("desc").value;
     const dir = document.getElementById("direction").value;
     const wbpg = document.getElementById("webpage").value;
-    if (!name || !desc || !dir) {
+    if(!name || !desc || !dir) 
+    {
         document.getElementById("error").innerHTML = '<h2>Please fill in name, description, and address</h2>';
         return;
     }
-    try {
+    try 
+    {
         const { lat, lng } = await coordsFromLink(dir);
         const response = await (fetch(`/api/restaurants/${id}`, {
             method: "PUT",
@@ -814,22 +894,25 @@ async function saveEditRest(tripId, id) {
             })
         }));
         const result = await response.json();
-        if (!response.ok) {
+        if(!response.ok) 
+        {
             throw new Error(result.error || "Edit Restaurant Failed");
         }
         loadFoodPage(tripId);
     }
-    catch (err) {
+    catch(err) 
+    {
         console.error("Failed to edit restaurant:", err);
         document.getElementById("error").innerHTML = '<h2>Failed to edit Restaurant</h2>';
     }
 }
 
-//Delete function for restaurants
-async function deleteRest(tripId, id) {
-    if (!confirm("Delete this restaurant?")) return;
+async function deleteRest(tripId, id) 
+{
+    if(!confirm("Delete this restaurant?")) return;
 
-    try {
+    try 
+    {
         const response = await fetch(`/api/restaurants/${id}`, {
             method: "DELETE"
         });
@@ -838,29 +921,35 @@ async function deleteRest(tripId, id) {
             throw new Error(result.error || "Restaurant delete failed");
         }
         loadFoodPage(tripId);
-    } catch (err) {
+    } 
+    catch(err) 
+    {
         console.error("Failed to delete restaurant:", err);
         document.getElementById("error").innerHTML = '<h2>Failed to delete Restaurant</h2>';
     }
 }
 
-async function coordsFromLink(link) {
+async function coordsFromLink(link) 
+{
     const r = await fetch(`/api/resolve-link?url=${encodeURIComponent(link)}`);
     const data = await r.json();
     if (!r.ok) throw new Error(data.error);
-    return data;   // { lat, lng }
+    return data;
 }
 
-async function saveRestaurant(id) {
+async function saveRestaurant(id) 
+{
     const name = document.getElementById("name").value;
     const desc = document.getElementById("desc").value;
     const dir = document.getElementById("direction").value;
     const wbpg = document.getElementById("webpage").value;
-    if (!name || !desc || !dir) {
+    if(!name || !desc || !dir) 
+    {
         document.getElementById("error").innerHTML = '<h2>Please fill in name, description, and address</h2>';
         return;
     }
-    try {
+    try 
+    {
         const { lat, lng } = await coordsFromLink(dir);
         const response = await (fetch("/api/restaurants", {
             method: "POST",
@@ -878,21 +967,23 @@ async function saveRestaurant(id) {
             })
         }));
         const result = await response.json();
-        if (!response.ok) {
+        if(!response.ok) 
+        {
             throw new Error(result.error || "Restaurant Creation Failed");
         }
         loadFoodPage(id);
     }
-    catch (err) {
+    catch(err) 
+    {
         console.error("Failed to create restaurant:", err);
         document.getElementById("error").innerHTML = '<h2>Failed to create Restaurant</h2>';
     }
 }
 
-function sortByCloseness(myLat, myLng, rests, unit = "mi") {
+function sortByCloseness(myLat, myLng, rests, unit = "mi") 
+{
     const R = unit === "km" ? 6371.0088 : 3958.7613; // Earth radius
     const rad = (d) => (d * Math.PI) / 180;
-
     return rests
         .map((r) => {
             const dLat = rad(r.lat - myLat);
@@ -905,12 +996,14 @@ function sortByCloseness(myLat, myLng, rests, unit = "mi") {
         .sort((a, b) => a.distance - b.distance); // nearest first
 }
 
-function show(value) {
+function show(value)
+{
     return value == null ? "" : value;
 }
 
-function formatTimeString(timeString) {
-    if (!timeString) return "";
+function formatTimeString(timeString) 
+{
+    if(!timeString) return "";
     let [hours, minutes] = timeString.split(':');
     hours = parseInt(hours, 10);
     const period = hours >= 12 ? 'PM' : 'AM';
@@ -918,11 +1011,12 @@ function formatTimeString(timeString) {
     return `${hours}:${minutes} ${period}`;
 }
 
-function formatTimeRange(start, end) {
-    if (!start && !end) return "";
+function formatTimeRange(start, end) 
+{
+    if(!start && !end) return "";
     const s = formatTimeString(start);
     const e = formatTimeString(end);
-    if (s && e) return `${s} - ${e}`;
+    if(s && e) return `${s} - ${e}`;
     return s || e;
 }
 
@@ -933,51 +1027,54 @@ let scrollRaf = null;
 const EDGE = 90;
 const MAX_SPEED = 18;
 
-function updateDrag() {
-    if (!drag) return;
-
-    // Include how far the page has scrolled since the drag began,
-    // otherwise the card drifts away from your finger while scrolling
+function updateDrag()
+{
+    if(!drag) return;
     const dx = drag.x - drag.startX;
     const dy = drag.y - drag.startY + (window.scrollY - drag.startScroll);
     drag.el.style.transform = `translate(${dx}px, ${dy}px)`;
-
     const zone = zoneAt(drag.x, drag.y);
-    if (zone !== drag.zone) {
+    if(zone !== drag.zone) 
+    {
         drag.zone?.classList.remove('over');
         zone?.classList.add('over');
         drag.zone = zone;
     }
 }
 
-function autoScroll() {
-    if (!drag) { scrollRaf = null; return; }
-
+function autoScroll()
+{
+    if(!drag) { scrollRaf = null; return; }
     let speed = 0;
-    if (drag.y < EDGE) {
+    if(drag.y < EDGE) 
+    {
         speed = -MAX_SPEED * Math.min(1, (EDGE - drag.y) / EDGE);
-    } else if (drag.y > window.innerHeight - EDGE) {
+    } 
+    else if (drag.y > window.innerHeight - EDGE) 
+    {
         speed = MAX_SPEED * Math.min(1, (drag.y - (window.innerHeight - EDGE)) / EDGE);
     }
 
-    if (speed) {
-        // scrollBy can round tiny values to 0, so force at least 1px
+    if(speed) 
+    {
+    
         window.scrollBy(0, Math.sign(speed) * Math.max(1, Math.round(Math.abs(speed))));
-        updateDrag();   // re-check the drop zone even though the finger hasn't moved
+        updateDrag();
     }
     scrollRaf = requestAnimationFrame(autoScroll);
 }
 
-function endDrag() {
+function endDrag() 
+{
     cancelAnimationFrame(scrollRaf);
     scrollRaf = null;
     document.body.classList.remove('dragActive');
 }
 
-function zoneAt(x, y) {
+function zoneAt(x, y) 
+{
     return document.elementsFromPoint(x, y).find(n => n.classList.contains('dayDiv')) ?? null;
 }
-
 document.addEventListener('selectstart', (e) => {
     if (drag) e.preventDefault();
 });
@@ -986,7 +1083,6 @@ wraps.addEventListener('pointerdown', (e) => {
     const handle = e.target.closest('.dragHandle');
     if (!handle) return;
     const el = handle.closest('.activity');
-
     drag = {
         el,
         startX: e.clientX,
@@ -1005,14 +1101,14 @@ wraps.addEventListener('pointerdown', (e) => {
 });
 
 wraps.addEventListener('pointermove', (e) => {
-    if (!drag) return;
+    if(!drag) return;
     drag.x = e.clientX;
     drag.y = e.clientY;
     updateDrag();
 });
 
 wraps.addEventListener('pointerup', async () => {
-    if (!drag) return;
+    if(!drag) return;
     const { el, zone } = drag;
     drag = null;
     endDrag();
@@ -1020,18 +1116,18 @@ wraps.addEventListener('pointerup', async () => {
     el.classList.remove('dragging');
     el.style.transform = '';
     zone?.classList.remove('over');
-    if (!zone) return;
+    if(!zone) return;
 
     const newDay = Number(zone.dataset.day);
     const oldDay = Number(el.closest('.dayDiv').dataset.day);
-    if (newDay === oldDay) return;
+    if(newDay === oldDay) return;
 
     zone.querySelector('.activeDiv').appendChild(el);
     await moveActivity(Number(el.dataset.id), newDay);
 });
 
 wraps.addEventListener('pointercancel', () => {
-    if (!drag) return;
+    if(!drag) return;
     drag.el.classList.remove('dragging');
     drag.el.style.transform = '';
     drag.zone?.classList.remove('over');
@@ -1041,7 +1137,8 @@ wraps.addEventListener('pointercancel', () => {
 
 async function moveActivity(activityId, newDay) {
     const a = currentActivities.find(x => x.id === activityId);
-    try {
+    try 
+    {
         const response = await fetch(`/api/activities/${activityId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -1060,26 +1157,29 @@ async function moveActivity(activityId, newDay) {
         });
         if (!response.ok) throw new Error(`Server returned ${response.status}`);
         a.dayID = newDay;
-    } catch (err) {
+    } 
+    catch(err) 
+    {
         console.error("Failed to move activity:", err);
         loadTripPage(currentTripId);
     }
 }
 
-function autoGrow(el) {
+function autoGrow(el) 
+{
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
 }
 
 let restoring = false;
 
-function trackPage(name) {
+function trackPage(name) 
+{
     const original = window[name];
-
     window[name] = function (...args) {
-        stopMapLocate();   // always shut down GPS/map when leaving the map page
-
-        if (!restoring) {
+        stopMapLocate();
+        if(!restoring) 
+        {
             const state = {
                 page: name,
                 args: args.filter(a => ["string", "number", "boolean"].includes(typeof a))
@@ -1088,9 +1188,12 @@ function trackPage(name) {
                 JSON.stringify(history.state) === JSON.stringify(state);
 
             // First page load or a re-render of the same page: replace, don't stack
-            if (history.state === null || same) {
+            if(history.state === null || same) 
+            {
                 history.replaceState(state, "");
-            } else {
+            } 
+            else 
+            {
                 history.pushState(state, "");
             }
         }
@@ -1106,7 +1209,7 @@ function trackPage(name) {
 
 window.addEventListener("popstate", async (e) => {
     restoring = true;
-    try {
+    try{
         const s = e.state;
         if (s && typeof window[s.page] === "function") {
             await window[s.page](...s.args);
