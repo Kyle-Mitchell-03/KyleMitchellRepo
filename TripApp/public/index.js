@@ -301,7 +301,7 @@ async function loadFoodPage(id)
         document.getElementById("rests").innerHTML = sorted.map(r => `
             <div class="restCard">
                 <h3>${r.restName}</h3>
-                <p>${r.distance.toFixed(1)} mi away</p>
+                <p>${r.distance == null ? "" : r.distance.toFixed(1) + " mi away"}</p>
                 <p>${r.notes ?? ""}</p>
                 <button onclick = "window.location.href ='${r.location}'" class = "linkBtn">Directions</button>
                 <button onclick = "window.location.href ='${r.webpage}'" class = "linkBtn">Website</button>
@@ -673,7 +673,7 @@ async function saveEditActivity(tripId, dayNumber, activityId)
     }
     try 
     {
-        const { lat, lng } = await coordsFromLink(activDir);
+        const { lat, lng } = await coordsOrNull(activDir);
         const response = await (fetch(`/api/activities/${activityId}`, {
             method: "PUT",
             headers: {
@@ -698,7 +698,7 @@ async function saveEditActivity(tripId, dayNumber, activityId)
         {
             throw new Error(result.error || "Activity Save Failed");
         }
-        loadTripPage(tripId);
+        editDay(tripId,dayNumber);
     }
     catch(err)
     {
@@ -777,7 +777,7 @@ async function saveActivity(tripId, dayNumber)
     }
     try 
     {
-        const { lat, lng } = await coordsFromLink(activDir);
+        const { lat, lng } = await coordsOrNull(activDir);
         const response = await (fetch("/api/activities", {
             method: "POST",
             headers: {
@@ -802,7 +802,7 @@ async function saveActivity(tripId, dayNumber)
         {
             throw new Error(result.error || "Activity Creation Failed");
         }
-        tripPage();
+        editDay(tripId,dayNumber);
     }
     catch(err) 
     {
@@ -878,7 +878,7 @@ async function saveEditRest(tripId, id)
     }
     try 
     {
-        const { lat, lng } = await coordsFromLink(dir);
+        const { lat, lng } = await coordsOrNull(dir);
         const response = await (fetch(`/api/restaurants/${id}`, {
             method: "PUT",
             headers: {
@@ -937,6 +937,21 @@ async function coordsFromLink(link)
     return data;
 }
 
+// Like coordsFromLink, but never blocks saving: if no coordinates can be
+// found, the item is saved without a map pin (lat/lng = null).
+async function coordsOrNull(link)
+{
+    try
+    {
+        return await coordsFromLink(link);
+    }
+    catch(err)
+    {
+        console.warn("No coordinates for link, saving without pin:", err);
+        return { lat: null, lng: null };
+    }
+}
+
 async function saveRestaurant(id) 
 {
     const name = document.getElementById("name").value;
@@ -950,7 +965,7 @@ async function saveRestaurant(id)
     }
     try 
     {
-        const { lat, lng } = await coordsFromLink(dir);
+        const { lat, lng } = await coordsOrNull(dir);
         const response = await (fetch("/api/restaurants", {
             method: "POST",
             headers: {
@@ -986,6 +1001,7 @@ function sortByCloseness(myLat, myLng, rests, unit = "mi")
     const rad = (d) => (d * Math.PI) / 180;
     return rests
         .map((r) => {
+            if(r.lat == null || r.lng == null) return { ...r, distance: null };
             const dLat = rad(r.lat - myLat);
             const dLng = rad(r.lng - myLng);
             const a =
@@ -993,7 +1009,7 @@ function sortByCloseness(myLat, myLng, rests, unit = "mi")
                 Math.cos(rad(myLat)) * Math.cos(rad(r.lat)) * Math.sin(dLng / 2) ** 2;
             return { ...r, distance: 2 * R * Math.asin(Math.sqrt(a)) };
         })
-        .sort((a, b) => a.distance - b.distance); // nearest first
+        .sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity)); // nearest first, no-coords last
 }
 
 function show(value)

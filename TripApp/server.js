@@ -1,13 +1,12 @@
 const express = require('express');
 const path = require('path');
 const mysql = require('mysql2/promise');
- 
-//require('dotenv').config();
+require('dotenv').config();
 const pool = mysql.createPool({
-    host: "localhost",//process.env.DB_HOST,
-    user: "root", //process.env.DB_USER,
-    password: "", //process.env.DB_PASSWORD,
-    database: "travel",//process.env.DB_NAME,
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     dateStrings: true
 });
  
@@ -143,19 +142,37 @@ async function geocode(q)
     }
 }
  
-async function geocodeAddress(addr) {
+function buildAddressCandidates(addr)
+{
     const cleaned = addr
         .replace(/[−‐‑–]/g, "-")
-        .replace(/〒\s*[\d-]+/g, "")
+        .replace(/〒\s*[\d-]+/g, "")      // Japanese postal mark
+        .replace(/\b\d{3}-\d{4}\b/g, "")   // Japanese postal code
+        .replace(/\d+\s*階/g, "")          // floor numbers like 53階
         .trim();
-    const tokens = cleaned.split(/\s+/).filter(Boolean);
-    if(!tokens.length) return null;
- 
-    const minWords = Math.min(2, tokens.length);
+
+    const segs = cleaned.split(",").map(s => s.trim()).filter(Boolean);
+    if(!segs.length) return [];
+
+    const name = segs[0];
+    const tail = segs.slice(-3).join(", ");   // e.g. "Minato City, Tokyo, Japan"
+
+    return [...new Set([
+        `${name}, ${tail}`,          // venue + city/country (best for landmarks)
+        segs.join(", "),             // full address
+        name,                        // venue name alone
+        segs.slice(1).join(", ")     // street address without venue name
+    ])].filter(Boolean);
+}
+
+async function geocodeAddress(addr)
+{
+    const candidates = buildAddressCandidates(addr);
     let tries = 0;
-    for(let n = tokens.length; n >= minWords && tries < 4; n--, tries++) 
+    for(const c of candidates)
     {
-        const hit = await geocode(tokens.slice(0, n).join(" "));
+        if(tries++ >= 4) break;
+        const hit = await geocode(c);
         if(hit) return hit;
         await new Promise(r => setTimeout(r, 1100));
     }
@@ -186,7 +203,9 @@ app.get('/api/resolve-link', async (req, res) => {
     {
         let { url } = req.query;
         console.log("incoming url:", url);
-        const u = new URL(url);
+        if(!url) return res.status(400).json({ error: "Missing url" });
+        let u;
+        try { u = new URL(url); } catch { return res.status(400).json({ error: "Invalid URL" }); }
  
         if(SHORT_HOSTS.includes(u.hostname)) 
         {
